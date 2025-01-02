@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <form id="priceForm">
+                <div id="cms-container" class="individual-container">
+                    <h2>입주청소</h2>
+                    <select id="selectRoomType">
+                        <option value="normalType" selected>일반 평수</option>
+                        <option value="smallType">소형 평수</option>
+                    </select>
+                    <br>
+                    <div id="normalType" style="display: none;">
+                        <h5>평수 입력</h5>
+                        <input type="number" id="size">
+                    </div>
+                    <div id="smallType" style="display: none;">
+                        <fieldset>
+                            <h5>소형 평수 구조 선택</h5>
+                            <label for="_1room">
+                                <input type="radio" id="_1room" name="structure" value="_1room">
+                                일체형 원룸
+                            </label><br>
+                            <label for="separated1room">
+                                <input type="radio" id="separated1room" name="structure" value="separated1room">
+                                분리형 원룸
+                            </label><br>
+                            <label for="doubleDecker1room">
+                                <input type="radio" id="doubleDecker1room" name="structure" value="doubleDecker1room">
+                                복층형 원룸
+                            </label><br>
+                            <label for="_2room1bath">
+                                <input type="radio" id="_2room1bath" name="structure" value="_2room1bath">
+                                방2, 욕실1
+                            </label><br>
+                            <label for="_3room1bath">
+                                <input type="radio" id="_3room1bath" name="structure" value="_3room1bath">
+                                방3, 욕실1
+                            </label><br>
+                            <label for="_3room2bath">
+                                <input type="radio" id="_3room2bath" name="structure" value="_3room2bath">
+                                방3, 욕실2
+                            </label><br>
+                        </fieldset>
+                    </div>
+                    <hr>
+                    <label for="coatingOption">마루코팅 </label>
+                    <select id="coatingOption">
+                        <option value="noFloorCoating">X</option>
+                        <option value="room_excluded">방 미포함</option>
+                        <option value="room_included">방 포함 전체</option>
+                    </select>
+                    <br>
+                    <label for="newHouseSyndrome">새집증후군 시공</label>
+                    <input type="checkbox" id="newHouseSyndrome">
+                    <div id="smallCleaningPriceResult" class="priceResult"></div>
+                    <div id="cleaningPriceResult" class="priceContainer"></div>
+                    <div id="warningContainer" style="display: none; color: red; font-weight: bold; margin-top: 10px;"></div>
+                    <div id="floorCoatingResult" class="priceContainer"></div>
+
+                    <div id="syndromeResult" class="priceContainer"></div>
+
+                </div>
+                <div id="paint-container" class="individual-container">
+                    <fieldset>
+                        <h2>탄성코트</h2>
+                        <label for="basic">
+                            <input type="radio" id="basic" name="paintOption" value="basic">
+                            베이직
+                        </label><br>
+                        <label for="standard">
+                            <input type="radio" id="standard" name="paintOption" value="standard">
+                            스탠다드
+                        </label><br>
+                        <label for="premium">
+                            <input type="radio" id="premium" name="paintOption" value="premium">
+                            프리미엄
+                        </label>
+                        <div class="priceResult" id="paintPriceResult"></div>
+                    </fieldset>
+                </div>
+                <div id="julun-container" class="individual-container">
+                    <fieldset>
+                        <h2>줄눈시공</h2>
+                        <div class="row">
+                            <div class="col">
+                                <div id="julun-floor" class="detail-option">
+                                    <h2>바닥</h2>
+                                        <input type="radio" id="julun1_1" name="julunFloor">
+                                        <label for="julun1_1">욕실 1개소 &#40;+현관&#41;</label><br>
+
+                                        <input type="radio" id="julun1_2" name="julunFloor">
+                                        <label for="julun1_2">욕실 2개소 &#40;+현관&#41;</label><br>
+
+                                        <input type="checkbox" id="julun1_3">
+                                        <label for="julun1_3">베란다 1개소</label><br>
+
+                                        <input type="radio" id="julun1_4" name="julunFloorArea">
+                                        <label for="julun1_4">거실 타일</label><br>
+
+                                        <input type="radio" id="julun1_5" name="julunFloorArea">
+                                        <label for="julun1_5">거실 타일, 방 포함</label>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <div id="julun-wall" class="detail-option">
+                                    <h2>벽면</h2>
+                                        <input type="radio" id="julun2_1" name="julunWall">
+                                        <label for="julun2_1">욕실 전체_4면 &#40;1개소&#41;</label><br>
+
+                                        <input type="radio" id="julun2_2" name="julunWall">
+                                        <label for="julun2_2">욕실 전체_4면 &#40;2개소&#41;</label><br>
+
+                                        <input type="checkbox" id="julun2_3" name="julunWallMore">
+                                        <label for="julun2_3">샤워부스 내부 &#47; 욕조 라인</label><br>
+                                        
+                                        <input type="checkbox" id="julun2_4" name="julunWallMore">
+                                        <label for="julun2_4">주방 벽면</label><br>
+
+                                        <input type="checkbox" id="julun2_5" name="julunWallMore">
+                                        <label for="julun2_5">거실 아트월</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="julun-silicone" class="detail-option">
+                            <h2>실리콘 오염 방지</h2>
+                            <input type="radio" id="julun3_1" name="bathroomJulunSilicone">
+                            <label for="julun3_1">욕실 1개소</label><br>
+
+                            <input type="radio" id="julun3_2" name="bathroomJulunSilicone">
+                            <label for="julun3_2">욕실 2개소</label><br>
+                            
+                            <input type="checkbox" id="julun3_3" name="kitchenJulunsilicone">
+                            <label for="julun3_3">주방</label>
+                        </div>
+                        <div class="priceResult" id="julunPriceResult"></div>
+                    </fieldset>
+                </div>
+                <div id="coating-container" class="individual-container">
+                    <fieldset>
+                        <h2>생활코팅</h2>
+                        <div id="coating-kitchen" class="detail-option">
+                            <h2>주방 상판코팅</h2>
+                            <input type="radio" id="coating1_1" name="coatingKitchen">
+                            <label for="coating1_1">인조대리석 &#40;연마작업 &#38; UV코팅&#41;</label>
+
+                            <input type="radio" id="coating1_2" name="coatingKitchen">
+                            <label for="coating1_2">엔지니어드스톤 &#40;박리작업 &#38; 하이브리드코팅&#41;</label>
+                        </div>
+                        <div id="coating-nano" class="detail-option">
+                            <h2>욕실 나노코팅</h2>
+                            <input type="checkbox" id="coating2_1">
+                            <label for="coating2_1">공용 욕실</label>
+
+                            <input type="checkbox" id="coating2_2">
+                            <label for="coating2_2">안방 욕실</label>
+                        </div>
+                        <div id="coating-floorTile" class="detail-option">
+                            <h2>바닥 타일코팅</h2>
+                            <input type="checkbox" id="coating3_1">
+                            <label for="coating3_1">공용 욕실</label>
+
+                            <input type="checkbox" id="coating3_2">
+                            <label for="coating3_2">안방 욕실</label>
+
+                            <input type="checkbox" id="coating3_3">
+                            <label for="coating3_3">거실, 주방, 복도</label>
+                        </div>
+                        <div id="coating-wallTile" class="detail-option">
+                            <h2>벽 타일코팅</h2>
+                            <input type="checkbox" id="coating4_1">
+                            <label for="coating4_1">주방 벽면 코팅</label>
+
+                            <input type="checkbox" id="coating4_2">
+                            <label for="coating4_2">욕실 샤워부스 안쪽 벽면</label>
+
+                            <input type="checkbox" id="coating4_3">
+                            <label for="coating4_3">공용 욕실 벽면 전체</label>
+
+                            <input type="checkbox" id="coating4_4">
+                            <label for="coating4_4">안방 욕실 벽면 전체</label>
+
+                        </div>
+                        <div class="priceResult" id="coatingPriceResult"></div>
+                    </fieldset>
+                </div>                
+            </form>
+        </div>
+        <div class="col">
+            <div id="totalPriceResult" class="priceResult"></div>
+            <button type="button" id="generateEstimateButton">견적서 생성</button>
+            <div id="estimateTableContainer">
+                <h2>시공 견적서</h2>
+                <table id="estimateTable" border="1">
+                    <thead>
+                        <tr>
+                            <th>항목</th>
+                            <th>세부 내용</th>
+                            <th>금액</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 견적 항목이 여기에 추가됨 -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="2">총 합계</th>
+                            <th id="estimateTotalPrice">0원</th>
+                        </tr>
+                    </tfoot>
+                </table>
+                <button type="button" id="downloadEstimatePDF">견적서 다운로드</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.js"></script>
+{% endblock %}
+

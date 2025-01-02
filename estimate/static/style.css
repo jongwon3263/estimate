@@ -1,0 +1,77 @@
+body {
+    background-color: #166166;
+    color: black;
+}
+
+h2 {
+    font-size: 30px;    
+    font-weight: bold;
+}
+
+/* 컨테이너 스타일 */
+.individual-container {
+    margin-top: 10px;
+    height: auto;
+    background-color: #f0f0f0; /* 밝은 회색 */
+    padding: 20px; /* 내부 여백 추가 */
+    border-radius: 8px; /* 둥근 모서리 */
+    border: 1px solid #ccc; /* 경계선 */
+}
+
+.paintPriceResult {
+    font-size: 30px;
+    font-weight: bold;
+}
+
+.priceResult {
+    margin-top: 20px;
+    font-size: 30px;
+    font-weight: bold;
+    color:blue;
+}
+
+.priceContainer {
+    margin-top: 10px;
+    font-size: 30px;
+    font-weight: bold;
+    color:blue;
+}
+
+.detail-option {
+    margin-top: 15px;
+}
+
+table, td, th {
+    border : 1px solid black;
+    border-collapse : collapse;
+    line-height: 30px;
+}
+
+td {
+    padding: 10px;
+}
+
+table {
+    width : auto;
+    height : auto;
+}
+
+th{
+    text-align: center;
+}
+
+#estimateTable {
+    background-color: #F0FFFF
+}
+
+#estimateTableContainer {
+    display: none; /* 초기에는 숨겨둠 */
+    margin-top: 20px;
+}
+
+.detailItem{
+    font-weight: 700;
+    font-size: 30px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
