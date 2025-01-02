@@ -10,9 +10,9 @@ let totalPriceComponents = {
 };
 
 //--일반 or 소형평수 선택--//
-const selectRoomType = document.getElementById('selectRoomType')
-const normalTypeDiv = document.getElementById('normalType')
-const smallTypeDiv = document.getElementById('smallType')
+const selectRoomType = document.getElementById('selectRoomType');
+const normalTypeDiv = document.getElementById('normalType');
+const smallTypeDiv = document.getElementById('smallType');
 
 // 금액 표시 요소 가져오기
 const smallCleaningPriceResult = document.getElementById('smallCleaningPriceResult');
