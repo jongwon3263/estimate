@@ -18,6 +18,11 @@ h2 {
     border: 1px solid #ccc; /* 경계선 */
 }
 
+.small-container {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
 .paintPriceResult {
     font-size: 30px;
     font-weight: bold;
@@ -35,6 +40,12 @@ h2 {
     font-size: 30px;
     font-weight: bold;
     color:blue;
+}
+
+.customerInfo {
+    font-size: 50px;
+    font-weight: bold;
+    color:white;
 }
 
 .detail-option {
@@ -74,4 +85,25 @@ th{
     font-size: 30px;
     padding-top: 20px;
     padding-bottom: 20px;
+}
+
+summary {
+    list-style: none; /* 기본 마커 제거 */
+    cursor: pointer;
+}
+
+summary::marker {
+    content: ""; /* 마커 제거 */
+}
+
+#paint-container,
+#julun-container,
+#coating-container {
+    transition: background-color 0.3s ease-in-out; /* 배경색 변화 시간과 속도 설정 */
+}
+
+#paint-container:hover,
+#julun-container:hover,
+#coating-container:hover {
+    background-color:#FFFF66;
 }
