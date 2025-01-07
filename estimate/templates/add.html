@@ -7,7 +7,7 @@
                 <div class="individual-container">
                     <h2>고객 정보</h2>
                     <div class="small-container">
-                        <label style="font-size:20px;">고객 성함</label>
+                        <label style="font-size:20px;">고객명</label>
                         <input type="text" id="customer" style="width:100px;"><br>
                     </div>
                     <div class="small-container">
@@ -208,10 +208,10 @@
             <p style="color:white;">평수가 비어있으면 견적서 생성이 안됩니다. 0이라도 써주세요. 제발 ㅠ</p>
             <div id="totalPriceResult" class="priceResult"></div>
             <button type="button" id="generateEstimateButton">견적서 생성</button>
-            <div id="estimateTableContainer">
+            <div id="estimateTableContainer" style="display: none;">
                 <h2>시공 견적서</h2>
-                <div id="customerName" class="customerInfo"></div>
-                <div id="customerAddress" class="customerInfo"></div>
+                <p class="customerInfo">고객명: <span id="displayCustomer" class="customerInfo">-</span></p>
+                <p class="customerInfo">주소: <span id="displayAddress" class="customerInfo">-</span></p>
                 <table id="estimateTable" border="1">
                     <thead>
                         <tr>
@@ -238,5 +238,6 @@
 <script src="{{ url_for('static', filename='script.js') }}"></script>
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 <script src="https://unpkg.com/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 {% endblock %}
 

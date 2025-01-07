@@ -200,7 +200,6 @@ function updateUI() {
     updateTotalPrice();
 }
 const customerName = document.getElementById('customerName');
-customerName.textContent ? ``: '';
 
 // 소형평수 구조 선택에 따른 금액 업데이트
 function updateSmallCleaningPrice(event) {
@@ -470,19 +469,47 @@ addEventListeners();
 // 이벤트 리스너 초기화 호출
 // addJulunEventListeners();
 
-document.getElementById('generateEstimateButton').addEventListener('click', generateEstimateTable);
+// 버튼 클릭 이벤트 설정
+document.getElementById('generateEstimateButton').addEventListener('click', () => {
+    displayCustomerInfo(); // 고객 정보 표시
+    generateEstimateTable(); // 견적 테이블 생성
+});
+
+// 고객 정보를 표시하는 함수
+function displayCustomerInfo() {
+    const estimateTableContainer = document.getElementById('estimateTableContainer');
+    const customerNameElement = document.getElementById('displayCustomer');
+    const customerAddressElement = document.getElementById('displayAddress');
+
+    // estimateTableContainer가 숨겨져 있으면 먼저 표시
+    if (estimateTableContainer.style.display === 'none') {
+        estimateTableContainer.style.display = 'block';
+    }
+
+    if (customerNameElement && customerAddressElement) {
+        const customerName = document.getElementById('customer').value.trim();
+        const customerAddress = document.getElementById('address').value.trim();
+
+        // 입력값이 없으면 기본 메시지 표시
+        customerNameElement.textContent = customerName || '고객 이름 미입력';
+        customerAddressElement.textContent = customerAddress || '주소 미입력';
+    } else {
+        console.error('displayCustomer 또는 displayAddress 요소를 찾을 수 없습니다.');
+    }
+}
 
 //새로운 코드
 function generateEstimateTable() {
+    const estimateTableContainer = document.getElementById('estimateTableContainer');
     const tableBody = document.querySelector('#estimateTable tbody');
     const totalPriceElement = document.getElementById('estimateTotalPrice');
-    const estimateTableContainer = document.getElementById('estimateTableContainer');
 
     // 기존 테이블 내용을 초기화
     tableBody.innerHTML = '';
 
     let totalEstimatePrice = 0;
     let rowsAdded = false; // 항목이 추가되었는지 확인
+
 
     const formatPrice = (price) => (typeof price === 'number' ? price.toLocaleString() : '0');
 
@@ -583,67 +610,20 @@ function generateEstimateTable() {
     if (rowsAdded) {
         estimateTableContainer.style.display = 'block';
     } else {
-        alert('최소 하나의 항목을 선택해야 견적서를 생성할 수 있습니다.');
         estimateTableContainer.style.display = 'none';
+        alert('최소 하나의 항목을 선택해야 견적서를 생성할 수 있습니다.');
     }
 }
+// PDF 다운로드 버튼 클릭 시 PDF 생성
+document.getElementById('downloadEstimatePDF').addEventListener('click', function () {
+    const element = document.getElementById('estimateTableContainer');
+    const options = {
+        margin: 1,
+        filename: '견적서.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
 
-
-// 테이블 PDF 생성
-document.getElementById('downloadEstimatePDF').addEventListener('click', async () => {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-
-    // 텍스트 파일에서 Base64 데이터 로드
-    const response = await fetch('/static/font/NanumGothic_base64.txt');
-    const base64Font = await response.text();
-
-    // PDF에 폰트 추가
-    pdf.addFileToVFS('NanumGothic.ttf', base64Font);
-    pdf.addFont('NanumGothic.ttf', 'NanumGothic', 'normal');
-    pdf.setFont('NanumGothic');
-
-    // HTML 테이블 데이터 가져오기
-    const table = document.getElementById('estimateTable');
-    const rows = Array.from(table.rows).map(row =>
-        Array.from(row.cells).map(cell =>
-            cell.innerHTML
-                .replace(/<br\s*\/?>/g, '\n')
-                .replace(/\n\s+/g, '\n')
-                .trim()
-        )
-    );
-
-    // PDF에 테이블 추가
-    pdf.autoTable({
-        head: [rows[0]],
-        body: rows.slice(1),
-        theme: 'grid',
-        styles: {
-            font: 'NanumGothic',
-            fontSize: 12,
-            cellPadding: 1,
-            lineHeight: 3.5, // 줄 간격 조정
-        },
-        headStyles: {
-            fillColor: [0, 123, 255],
-            textColor: [255, 255, 255],
-            fontSize: 14,
-            fontStyle: 'bold',
-        },
-        bodyStyles: { 
-            fillColor: [245, 245, 245],
-            textColor: [0, 0, 0],
-            cellPadding: 2,
-            margin: 10
-            
-        },
-        columnStyles: {
-            0: { cellWidth: 30 },
-            2: { halign: 'center', cellWidth: 30 },
-        }
-    });
-
-    // PDF 저장
-    pdf.save('estimate.pdf');
+    html2pdf().set(options).from(element).save();
 });
