@@ -5,8 +5,14 @@ let totalPriceComponents = {
     syndrome: 0,
     smallCleaning: 0,
     paint: 0,
-    julun: 0,
-    coating: 0
+    julun_floor: 0,
+    julun_wall: 0,
+    julun_silicone: 0,
+    coating_kitchen: 0,
+    coating_nano: 0,
+    coating_wallTile: 0,
+    coating_floorTile: 0,
+    discount: 0, // 할인 금액
 };
 
 //--가격--//
@@ -64,15 +70,15 @@ const coatingPrices = {
     coating1_2: 330000,
     //나노
     coating2_1: 220000,
-    coating2_2: 330000,
+    coating2_2: 220000,
     //바닥타일
     coating3_1: 190000,
-    coating3_2: 290000,
+    coating3_2: 190000,
     //벽면타일
     coating4_1: 220000,
     coating4_2: 220000,
     coating4_3: 330000,
-    coating4_4: 550000
+    coating4_4: 330000
 };
 
 let cleaningPrice = 0;
@@ -95,6 +101,7 @@ const UIElements = {
     // 소형평수 라디오체크 여부
     selectedStructure: () => document.querySelector('input[name="structure"]:checked'),
     roomSize: () => parseInt(document.getElementById('size').value) || 0,
+    discount_1: () => parseInt(document.getElementById('discount_1').value) || 0,
     selectedRoomType: () => UIElements.selectRoomType.value,
 }
 
@@ -162,6 +169,7 @@ function updateUI() {
             warningContainer.style.display = "none";
         }
     } else {
+        cleaningPrice = 0; // 청소 금액 초기화
         warningContainer.style.display = "none";
         UIElements.cleaningPriceResult.textContent = '';
     }
@@ -216,38 +224,48 @@ function updateSmallCleaningPrice(event) {
 }
 
 
-// 탄성코트 단일 금액, 최종 금액 업데이트
-function updatePaintPrice(event) {
-    const selectedPaint = event.target;
+function handlePaintOption(event) {
     const paintPriceResult = document.getElementById('paintPriceResult');
 
-    if (selectedPaint.name === 'paintOption' && selectedPaint.checked) {
-        const selectedPaintPrice = paintPrices[selectedPaint.value]; // 선언 범위를 블록 내로 이동
-        paintPriceResult.textContent = `${selectedPaintPrice.toLocaleString()}원`;
+    if (event && event.type === 'change') {
+        // 라디오 버튼이 변경된 경우 (옵션 선택)
+        const selectedPaint = event.target;
 
-        // totalPriceComponents 업데이트는 블록 내부에서 수행
-        totalPriceComponents.paint = selectedPaintPrice;
-    } else {
-        // 선택이 없거나 조건이 맞지 않을 경우 0으로 초기화
+        if (selectedPaint.name === 'paintOption' && selectedPaint.checked) {
+            const selectedPaintPrice = paintPrices[selectedPaint.value] || 0;
+            paintPriceResult.textContent = `${selectedPaintPrice.toLocaleString()}원`;
+            totalPriceComponents.paint = selectedPaintPrice;
+        }
+    } else if (event && event.type === 'click') {
+        // 초기화 버튼이 클릭된 경우
+        const radios = document.querySelectorAll('input[name="paintOption"]');
+        radios.forEach(radio => (radio.checked = false));
+
+        paintPriceResult.textContent = '0원';
         totalPriceComponents.paint = 0;
     }
 
+    // 최종 금액 업데이트
     updateTotalPrice();
 }
 
 let selectedJulunOptions = []; // 선택된 줄눈 옵션을 저장할 배열
 
 // 줄눈가격
-function totalJulunPrice() {
+function handleJulunOption() {
     let totalPrice = 0;
     const roomSize = parseInt(document.getElementById('size').value) || 0;
+
+    let floorTotal = 0;
+    let wallTotal = 0;
+    let siliconeTotal = 0;
 
     selectedJulunOptions = []; // 기존 선택된 옵션 초기화
 
     // 바닥 라디오 버튼 (julun1_1, julun1_2)
     const selectedFloorOption = document.querySelector('input[name="julunFloor"]:checked');
     if (selectedFloorOption && julunPrices[selectedFloorOption.id]) {
-        totalPrice += julunPrices[selectedFloorOption.id];
+        floorTotal += julunPrices[selectedFloorOption.id];
         selectedJulunOptions.push(
             document.querySelector(`label[for="${selectedFloorOption.id}"]`).textContent
         );
@@ -256,7 +274,7 @@ function totalJulunPrice() {
     // 바닥 체크박스 (julun1_3)
     const julun1_3 = document.getElementById('julun1_3');
     if (julun1_3.checked && julunPrices[julun1_3.id]) {
-        totalPrice += julunPrices[julun1_3.id];
+        floorTotal += julunPrices[julun1_3.id];
         selectedJulunOptions.push(
             document.querySelector(`label[for="${julun1_3.id}"]`).textContent
         );
@@ -266,7 +284,7 @@ function totalJulunPrice() {
     const selectedFloorAreaOption = document.querySelector('input[name="julunFloorArea"]:checked');
     if (selectedFloorAreaOption && julunPrices[selectedFloorAreaOption.id]) {
         const areaPrice = roomSize * julunPrices[selectedFloorAreaOption.id];
-        totalPrice += areaPrice;
+        floorTotal += areaPrice;
         selectedJulunOptions.push(
             `${document.querySelector(`label[for="${selectedFloorAreaOption.id}"]`).textContent} (${roomSize}평 적용)`
         );
@@ -276,7 +294,7 @@ function totalJulunPrice() {
     // 벽면 줄눈 라디오 버튼 (julun2_1, julun2_2)
     const selectedWallOption = document.querySelector('input[name="julunWall"]:checked');
     if (selectedWallOption && julunPrices[selectedWallOption.id]) {
-        totalPrice += julunPrices[selectedWallOption.id];
+        wallTotal += julunPrices[selectedWallOption.id];
         selectedJulunOptions.push(
             document.querySelector(`label[for="${selectedWallOption.id}"]`).textContent
         );
@@ -285,7 +303,7 @@ function totalJulunPrice() {
     // 벽면 체크박스 (julun2_3, julun2_4, julun2_5)
     document.querySelectorAll('input[name="julunWallMore"]:checked').forEach(checkbox => {
         if (julunPrices[checkbox.id]) {
-            totalPrice += julunPrices[checkbox.id];
+            wallTotal += julunPrices[checkbox.id];
             selectedJulunOptions.push(
                 document.querySelector(`label[for="${checkbox.id}"]`).textContent
             );
@@ -295,7 +313,7 @@ function totalJulunPrice() {
     // 실리콘 라디오 버튼 (julun3_1, julun3_2)
     const selectedSiliconeOption = document.querySelector('input[name="bathroomJulunSilicone"]:checked');
     if (selectedSiliconeOption && julunPrices[selectedSiliconeOption.id]) {
-        totalPrice += julunPrices[selectedSiliconeOption.id];
+        siliconeTotal += julunPrices[selectedSiliconeOption.id];
         selectedJulunOptions.push(
             document.querySelector(`label[for="${selectedSiliconeOption.id}"]`).textContent
         );
@@ -304,70 +322,302 @@ function totalJulunPrice() {
     // 실리콘 체크박스 (julun3_3)
     const julun3_3 = document.getElementById('julun3_3');
     if (julun3_3.checked && julunPrices[julun3_3.id]) {
-        totalPrice += julunPrices[julun3_3.id];
+        siliconeTotal += julunPrices[julun3_3.id];
         selectedJulunOptions.push(
             document.querySelector(`label[for="${julun3_3.id}"]`).textContent
         );
     }
 
+    // 각 항목의 합계를 totalPriceComponents에 저장
+    totalPriceComponents.julun_floor = floorTotal;
+    totalPriceComponents.julun_wall = wallTotal;
+    totalPriceComponents.julun_silicone = siliconeTotal;
+
+    // 총 합계를 julun_total에 계산하여 저장
+    const julun_total = calculateJulunTotal();
+
     // UI 업데이트
-    document.getElementById('julunPriceResult').textContent = `${totalPrice.toLocaleString()}원`;
+    document.getElementById('julunPriceResult').textContent = `${julun_total.toLocaleString()}원`;
 
     // 총 금액 업데이트
-    totalPriceComponents.julun = totalPrice;
+    updateTotalPrice();
+}
+
+// julun 계산 함수
+function calculateJulunTotal() {
+    return (
+        totalPriceComponents.julun_floor +
+        totalPriceComponents.julun_wall +
+        totalPriceComponents.julun_silicone
+    );
+}
+
+// 바닥 줄눈 초기화
+function initializeFloorJulunOption(event) {
+    if (event && event.type === 'click') {
+        // 바닥 줄눈 관련 라디오 버튼 초기화
+        const radioJulunFloor = document.querySelectorAll('input[name="julunFloor"]');
+        radioJulunFloor.forEach(radio => (radio.checked = false));
+
+        // 바닥 줄눈 평단가 계산 라디오 버튼 초기화
+        const radioJulunFloorArea = document.querySelectorAll('input[name="julunFloorArea"]');
+        radioJulunFloorArea.forEach(radio => (radio.checked = false));
+
+        // 바닥 줄눈 체크박스 초기화
+        const isChecked = document.getElementById('julun1_3');
+        if (isChecked) {
+            isChecked.checked = false;
+        }
+
+        // 바닥 줄눈 금액 초기화
+        totalPriceComponents.julun_floor = 0;
+    }
+
+    // 전체 금액 UI 업데이트
+    document.getElementById('julunPriceResult').textContent = 
+        `${calculateJulunTotal().toLocaleString()}원`;
+
+    // 총 금액 업데이트
+    updateTotalPrice();
+}
+
+// 벽 줄눈 초기화
+function initializeWallJulunOption(event) {
+    if (event && event.type === 'click') {
+        // 벽 줄눈 라디오 버튼 초기화
+        const radioJulunWall = document.querySelectorAll('input[name="julunWall"]');
+        radioJulunWall.forEach(radio => (radio.checked = false));
+
+        // 벽 줄눈 추가 옵션 체크박스 초기화
+        const wallMoreCheckboxes = document.querySelectorAll('input[name="julunWallMore"]');
+        wallMoreCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        // 벽 줄눈 금액 초기화
+        totalPriceComponents.julun_wall = 0;
+    }
+
+    // 전체 금액 UI 업데이트
+    document.getElementById('julunPriceResult').textContent = 
+        `${calculateJulunTotal().toLocaleString()}원`;
+
+    // 총 금액 업데이트
+    updateTotalPrice();
+}
+
+// 실리콘 줄눈 초기화
+function initializeSiliconeJulunOption(event) {
+    if (event && event.type === 'click') {
+        // 욕실 실리콘 줄눈 라디오 버튼 초기화
+        const radioBathroomSilicone = document.querySelectorAll('input[name="bathroomJulunSilicone"]');
+        radioBathroomSilicone.forEach(radio => (radio.checked = false));
+
+        // 주방 실리콘 줄눈 체크박스 초기화
+        const kitchenSiliconeCheckboxes = document.querySelectorAll('input[name="kitchenJulunsilicone"]');
+        kitchenSiliconeCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        // 실리콘 줄눈 금액 초기화
+        totalPriceComponents.julun_silicone = 0;
+    }
+
+    // 전체 금액 UI 업데이트
+    document.getElementById('julunPriceResult').textContent = 
+    `${calculateJulunTotal().toLocaleString()}원`;
+
+    // 총 금액 업데이트
+    updateTotalPrice();
+}
+
+// 줄눈 전체 초기화 함수
+function initializeJulunTotal() {
+    // 각 줄눈 초기화 함수 호출
+    initializeFloorJulunOption();
+    initializeWallJulunOption();
+    initializeSiliconeJulunOption();
+
+    // UI 업데이트 (전체 금액 합산 후 반영)
+    document.getElementById('julunPriceResult').textContent = 
+        `${calculateJulunTotal().toLocaleString()}원`;
+
+    // 총 금액 업데이트
     updateTotalPrice();
 }
 
 //---생활코팅---//
-function calculateCoatingKitchenPrice() {
-    let totalPrice = 0;
 
-    // 주방 상판코팅 라디오 버튼 선택
-    const selectedKitchenCoating = document.querySelector('input[name="coatingKitchen"]:checked');
-    if (selectedKitchenCoating && coatingPrices[selectedKitchenCoating.id]) {
-        totalPrice += coatingPrices[selectedKitchenCoating.id];
-        selectedCoatingOptions.push(
-            document.querySelector(`label[for="${selectedKitchenCoating.id}"]`).textContent
-        );
+function kitchenCoatingPrice() {
+    let price = 0;
+    const selectedOptions = [];
+
+    // 선택된 라디오 버튼 찾기
+    const selectedKitchenCoating = document.querySelector('input[name="kitchenCoating"]:checked');
+    if (selectedKitchenCoating) {
+        const coatingId = selectedKitchenCoating.id;
+
+        // 디버깅: 선택된 라디오 버튼 정보 확인
+        // console.log("선택된 라디오 버튼 ID:", coatingId);
+
+        // coatingPrices에서 해당 ID로 가격 찾기
+        if (coatingPrices[coatingId]) {
+            price += coatingPrices[coatingId];
+            selectedOptions.push(
+                document.querySelector(`label[for="${coatingId}"]`).textContent
+            );
+        } else {
+            console.warn(`coatingPrices에 '${coatingId}'가 존재하지 않습니다.`);
+        }
     }
 
-    return totalPrice;
+    // 결과 저장
+    totalPriceComponents.coating_kitchen = price;
+
+    // 디버깅: 계산된 금액과 선택된 옵션 출력
+    // console.log("주방 상판 코팅 결과 - 금액:", price, "선택된 옵션:", selectedOptions);
+
+    return { price, selectedOptions };
 }
 
-function totalCoatingPrice() {
-    let totalPrice = 0;
+// 나노코팅 금액
+function nanoCoatingPrice() {
+    let price = 0;
+    const selectedOptions = [];
+
+    // 선택된 체크박스 가져오기
+    const selectedNanoCoatings = document.querySelectorAll('input[name="nanoCoating"]:checked');
+    const selectedIds = Array.from(selectedNanoCoatings).map(checkbox => checkbox.id);
+
+    // 조건: 두 개의 나노 코팅 항목이 모두 선택된 경우
+    if (selectedIds.includes('coating2_1') && selectedIds.includes('coating2_2')) {
+        price = 330000; // 할인된 가격
+        selectedOptions.push('공용 욕실', '안방 욕실 (할인 적용)');
+    } else {
+        // 개별 선택 항목 계산
+        selectedNanoCoatings.forEach(checkbox => {
+            if (coatingPrices[checkbox.id]) {
+                price += coatingPrices[checkbox.id];
+                selectedOptions.push(
+                    document.querySelector(`label[for="${checkbox.id}"]`).textContent
+                );
+            }
+        });
+    }
+
+    // 결과 저장
+    totalPriceComponents.coating_nano = price;
+
+    return { price, selectedOptions };
+}
+
+// 바닥 타일코팅 금액
+function floorTileCoatingPrice() {
+    let price = 0;
+    const selectedOptions = [];
     const roomSize = parseInt(document.getElementById('size').value) || 0;
 
-    selectedCoatingOptions = []; // 기존 선택된 옵션 초기화
+    // 선택된 체크박스 가져오기
+    const selectedFloorTiles = document.querySelectorAll('input[name="floorTile"]:checked');
+    const selectedIds = Array.from(selectedFloorTiles).map(checkbox => checkbox.id);
 
-    // 주방 상판코팅 라디오 버튼 가격
-    totalPrice += calculateCoatingKitchenPrice();
-
-    // 체크박스 옵션 가격 계산
-    document.querySelectorAll('#coating-nano input[type="checkbox"], #coating-floorTile input[type="checkbox"], #coating-wallTile input[type="checkbox"]').forEach(checkbox => {
-        if (checkbox.checked) {
+    // 조건: 공용 욕실(coating3_1)과 안방 욕실(coating3_2)이 모두 선택된 경우
+    if (selectedIds.includes('coating3_1') && selectedIds.includes('coating3_2')) {
+        price += 290000; // 할인된 가격
+        selectedOptions.push('공용 욕실', '안방 욕실 (할인 적용)');
+    } else {
+        // 개별 선택 항목 계산
+        selectedFloorTiles.forEach(checkbox => {
             let label = document.querySelector(`label[for="${checkbox.id}"]`).textContent;
 
             if (checkbox.id === 'coating3_3') {
-                // 평당 가격 계산
                 const areaPrice = roomSize * 33000; // 평당 가격
-                totalPrice += areaPrice;
-                label += ` (${roomSize}평 적용)`; // 설명에 평수 추가
+                price += areaPrice;
+                label += ` (${roomSize}평 적용)`;
             } else if (coatingPrices[checkbox.id]) {
-                // 일반 체크박스 가격 계산
-                totalPrice += coatingPrices[checkbox.id];
+                price += coatingPrices[checkbox.id];
             }
 
-            selectedCoatingOptions.push(label); // 선택된 항목 저장
-        }
-    });
+            selectedOptions.push(label);
+        });
+    }
 
-    // UI 업데이트
+    // 결과 저장
+    totalPriceComponents.coating_floorTile = price;
+
+    return { price, selectedOptions };
+}
+
+// 벽 타일코팅 금액
+function wallTileCoatingPrice() {
+    let price = 0;
+    const selectedOptions = [];
+
+    // 선택된 체크박스 가져오기
+    const selectedWallTiles = document.querySelectorAll('input[name="wallTile"]:checked');
+    const selectedIds = Array.from(selectedWallTiles).map(checkbox => checkbox.id);
+
+    // 조건: 두 개의 나노 코팅 항목이 모두 선택된 경우
+    if (selectedIds.includes('coating4_3') && selectedIds.includes('coating4_4')) {
+        price = 550000; // 할인된 가격
+        selectedOptions.push('공용 욕실', '안방 욕실 (할인 적용)');
+    } else {
+        selectedWallTiles.forEach(checkbox => {
+            if (coatingPrices[checkbox.id]) {
+                price += coatingPrices[checkbox.id];
+                selectedOptions.push(
+                    document.querySelector(`label[for="${checkbox.id}"]`).textContent
+                );
+            }
+        });
+    }
+
+    // 결과 저장
+    totalPriceComponents.coating_wallTile = price;
+
+    return { price, selectedOptions };
+}
+
+let kitchenResult;
+let nanoResult;
+let floorTileResult;
+let wallTileResult;
+
+function totalCoatingPrice() {
+    // 각 코팅별 계산 결과
+    kitchenResult = kitchenCoatingPrice();
+    nanoResult = nanoCoatingPrice();
+    floorTileResult = floorTileCoatingPrice();
+    wallTileResult = wallTileCoatingPrice();
+
+    // 총 금액 계산
+    const totalPrice = kitchenResult.price + nanoResult.price + wallTileResult.price + floorTileResult.price;
+
+    // 선택된 옵션 합산
+    const selectedCoatingOptions = [
+        ...kitchenResult.selectedOptions,
+        ...nanoResult.selectedOptions,
+        ...wallTileResult.selectedOptions,
+        ...floorTileResult.selectedOptions,
+    ];
+
+    // 콘솔 출력용 디버깅 정보
+    console.log("선택된 옵션:", selectedCoatingOptions);
+    console.log("총 코팅 금액:", totalPrice);
+
     document.getElementById('coatingPriceResult').textContent = `${totalPrice.toLocaleString()}원`;
-
-    // 총 금액 업데이트
-    totalPriceComponents.coating = totalPrice;
     updateTotalPrice();
+    // 반환 값
+    return {
+        price: totalPrice,
+        selectedOptions: selectedCoatingOptions,
+    };
+}
+
+function updateDiscount() {
+    const discountInput = UIElements.discount_1(); // 할인 금액 호출
+    totalPriceComponents.discount = -Math.abs(discountInput); // 음수로 저장
+    updateTotalPrice(); // 최종 금액 업데이트
 }
 
 // 최종 금액 계산
@@ -377,9 +627,12 @@ function updateTotalPrice() {
     totalPriceResult.textContent = `총 합계: ${total.toLocaleString()}원`;
 }
 
-//--이벤트 리스너 추가--//
-// 청소, 마루코팅, 새집증후군
 
+//--이벤트 리스너 추가--//
+// 할인 이벤트리스너
+document.getElementById('discount_1').addEventListener('input', updateDiscount);
+
+// 청소, 마루코팅, 새집증후군
 
 // 평수 입력 업데이트
 document.getElementById('size').addEventListener('input', updateUI);
@@ -389,6 +642,7 @@ document.getElementById('smallType').addEventListener('change', updateUI);
 // 마루코팅 옵션 변경 업데이트
 document.getElementById('coatingOption').addEventListener('change', updateUI);
 
+
 // 새집증후군 체크박스 업데이트
 document.getElementById('newHouseSyndrome').addEventListener('change', updateUI);
 
@@ -397,77 +651,207 @@ document.querySelectorAll('input[name="structure"]').forEach(radio => {
     radio.addEventListener('change', updateSmallCleaningPrice);
 });
 
-// 탄성코트 옵션 선택
-document.querySelectorAll('input[name="paintOption"]').forEach(radio => {
-    radio.addEventListener('change', updatePaintPrice);
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 초기화 버튼 클릭 이벤트 연결
+    const initializePaintButton = document.getElementById('initializePaint');
+    if (initializePaintButton) {
+        initializePaintButton.addEventListener('click', handlePaintOption);
+    }
+
+    // 라디오 버튼 선택 이벤트 연결
+    const paintOptions = document.querySelectorAll('input[name="paintOption"]');
+    paintOptions.forEach(option => option.addEventListener('change', handlePaintOption));
 });
 
-// 줄눈과 생활코팅 이벤트 리스너
-function addEventListeners() {
+document.getElementById('initializeJulun_floor').addEventListener('click', initializeFloorJulunOption)
+document.getElementById('initializeJulun_wall').addEventListener('click', initializeWallJulunOption)
+document.getElementById('initializeJulun_silicone').addEventListener('click', initializeSiliconeJulunOption)
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('initializeJulun').addEventListener('click', initializeJulunTotal);
+});
+
+
+// 각 섹션의 이벤트 리스너 추가
+function addCoatingEventListeners() {
+    const kitchenSection = document.getElementById('coating-kitchen');
+    const nanoSection = document.getElementById('coating-nano');
+    const floorTileSection = document.getElementById('coating-floorTile');
+    const wallTileSection = document.getElementById('coating-wallTile');
+    const roomSizeInput = document.getElementById('size');
+
+    if (kitchenSection) {
+        kitchenSection.querySelectorAll('input[type="radio"]').forEach(input => {
+            input.addEventListener('change', () => {
+                console.log("상판코팅", kitchenResult);
+                totalCoatingPrice();
+            });
+        });
+    }
+
+    if (nanoSection) {
+        nanoSection.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.addEventListener('change', () => {
+                const { price, selectedOptions } = nanoCoatingPrice(); // 나노코팅 금액 계산 함수 호출
+                document.getElementById('coatingPriceResult').textContent = `${price.toLocaleString()}원`;
+                console.log("나노코팅 선택:", selectedOptions);
+    
+                // 총 코팅 금액 업데이트
+                totalCoatingPrice();
+            });
+        });
+    }
+
+    if (floorTileSection) {
+        floorTileSection.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.addEventListener('change', () => {
+                const { price, selectedOptions } = floorTileCoatingPrice(); // 수정된 함수 호출
+                document.getElementById('coatingPriceResult').textContent = `${price.toLocaleString()}원`;
+                console.log("바닥 타일코팅 선택:", selectedOptions);
+    
+                // 총 코팅 금액 업데이트
+                totalCoatingPrice();
+            });
+        });
+    }
+    if (wallTileSection) {
+        wallTileSection.querySelectorAll('input[type="checkbox"]').forEach(input => {
+            input.addEventListener('change', () => {
+                const { price, selectedOptions } = wallTileCoatingPrice();
+                document.getElementById('coatingPriceResult').textContent = `${price.toLocaleString()}원`;
+                console.log("벽 타일코팅:", wallTileResult);
+                totalCoatingPrice();
+            });
+        });
+    }
+
+    if (roomSizeInput) {
+        roomSizeInput.addEventListener('input', totalCoatingPrice);
+    }
+}
+
+// 코팅 이벤트 리스너 초기화
+addCoatingEventListeners();
+
+// 줄눈 이벤트 리스너
+function addJulunEventListeners() {
     // 줄눈 옵션 이벤트 리스너
     // 바닥 라디오 버튼 (julun1_1, julun1_2)
     document.querySelectorAll('input[name="julunFloor"]').forEach(radio => {
-        radio.addEventListener('change', totalJulunPrice);
+        radio.addEventListener('change', handleJulunOption);
     });
 
     // 바닥 체크박스 (julun1_3)
     const julun1_3 = document.getElementById('julun1_3');
     if (julun1_3) {
-        julun1_3.addEventListener('change', totalJulunPrice);
+        julun1_3.addEventListener('change', handleJulunOption);
     }
 
     // 바닥 평단가 라디오 버튼 (julun1_4, julun1_5)
     document.querySelectorAll('input[name="julunFloorArea"]').forEach(radio => {
-        radio.addEventListener('change', totalJulunPrice);
+        radio.addEventListener('change', handleJulunOption);
     });
 
     // 벽면 라디오 버튼 (julun2_1, julun2_2)
     document.querySelectorAll('input[name="julunWall"]').forEach(radio => {
-        radio.addEventListener('change', totalJulunPrice);
+        radio.addEventListener('change', handleJulunOption);
     });
 
     // 벽면 체크박스 (julun2_3, julun2_4, julun2_5)
     document.querySelectorAll('input[name="julunWallMore"]').forEach(checkbox => {
-        checkbox.addEventListener('change', totalJulunPrice);
+        checkbox.addEventListener('change', handleJulunOption);
     });
 
     // 실리콘 라디오 버튼 (julun3_1, julun3_2)
     document.querySelectorAll('input[name="bathroomJulunSilicone"]').forEach(radio => {
-        radio.addEventListener('change', totalJulunPrice);
+        radio.addEventListener('change', handleJulunOption);
     });
 
     // 실리콘 체크박스 (julun3_3)
     const julun3_3 = document.getElementById('julun3_3');
     if (julun3_3) {
-        julun3_3.addEventListener('change', totalJulunPrice);
+        julun3_3.addEventListener('change', handleJulunOption);
     }
-
-    // 생활 코팅 옵션 이벤트 리스너
-    // 주방 상판 코팅 라디오 버튼
-    document.querySelectorAll('input[name="coatingKitchen"]').forEach(radio => {
-        radio.addEventListener('change', totalCoatingPrice);
-    });
-
-    // 코팅 체크박스 (nano, floorTile, wallTile)
-    document.querySelectorAll('#coating-nano input[type="checkbox"], #coating-floorTile input[type="checkbox"], #coating-wallTile input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', totalCoatingPrice);
-    });
 
     // 평수 입력 변경 이벤트 리스너
     const roomSizeInput = document.getElementById('size');
     if (roomSizeInput) {
         roomSizeInput.addEventListener('input', () => {
-            totalJulunPrice();
-            totalCoatingPrice();
+            handleJulunOption();
+            // totalCoatingPrice();
         });
     }
 }
 
-// 이벤트 리스너 추가 초기화
-addEventListeners();
+// 줄눈 이벤트 리스너 초기화
+addJulunEventListeners();
 
-// 이벤트 리스너 초기화 호출
-// addJulunEventListeners();
+let lastClickedRadio = null;
+
+function toggleRadio(event) {
+    const radio = event.target;
+
+    if (lastClickedRadio === radio) {
+        radio.checked = false; // 선택 해제
+        lastClickedRadio = null; // 초기화
+
+        // 금액 초기화 (라디오 버튼의 name 속성을 기반으로 설정)
+        resetPriceForRadio(radio.name);
+
+        // UI 업데이트
+        updateTotalPrice();
+    } else {
+        lastClickedRadio = radio; // 현재 클릭된 라디오 버튼 저장
+    }
+}
+
+// 모든 라디오 버튼에 이벤트 리스너 추가
+document.querySelectorAll('input[type="radio"]').forEach(radio => {
+    radio.addEventListener('click', toggleRadio);
+});
+
+// 라디오 버튼 그룹에 따른 금액 초기화 함수
+function resetPriceForRadio(groupName) {
+    if (groupName === 'paintOption') {
+        totalPriceComponents.paint = 0;
+        document.getElementById('paintPriceResult').textContent = '0원';
+    } else if (groupName === 'julunFloor') {
+        totalPriceComponents.julun_floor = 0;
+        document.getElementById('julunPriceResult').textContent = `${calculateJulunTotal().toLocaleString()}원`;
+    } else if (groupName === 'julunFloorArea') {
+        // julunFloorArea 계산 로직
+        const roomSize = parseInt(document.getElementById('size').value) || 0;
+        const selectedFloorArea = document.querySelector('input[name="julunFloorArea"]:checked');
+
+        if (selectedFloorArea) {
+            const pricePerPyeong = parseInt(selectedFloorArea.id === 'julun1_4' ? 22000 : 40000); // 거실 또는 거실+방의 평당 가격
+            totalPriceComponents.julun_floor = roomSize * pricePerPyeong; // 총 금액 계산
+        } else {
+            totalPriceComponents.julun_floor = 0; // 선택되지 않았을 때
+        }
+
+        // 결과 반영
+        document.getElementById('julunPriceResult').textContent = `${totalPriceComponents.julun_floor.toLocaleString()}원`;
+    } else if (groupName === 'julunWall') {
+        totalPriceComponents.julun_wall = 0;
+        document.getElementById('julunPriceResult').textContent = `${calculateJulunTotal().toLocaleString()}원`;
+    } else if (groupName === 'bathroomJulunSilicone') {
+        totalPriceComponents.julun_silicone = 0;
+        document.getElementById('julunPriceResult').textContent = `${calculateJulunTotal().toLocaleString()}원`;
+    } else if (groupName === 'kitchenCoating') {
+        totalPriceComponents.coating_kitchen = 0;
+        document.getElementById('coatingPriceResult').textContent = `0원`;
+    }
+}
+
+// 바닥 줄눈 평단가 계산 (julunFloorArea) 이벤트 리스너
+document.querySelectorAll('input[name="julunFloorArea"]').forEach(radio => {
+    radio.addEventListener('change', () => resetPriceForRadio('julunFloorArea'));
+});
+
+// 평수 입력 변경 이벤트 리스너
+document.getElementById('size').addEventListener('input', () => resetPriceForRadio('julunFloorArea'));
+
 
 // 버튼 클릭 이벤트 설정
 document.getElementById('generateEstimateButton').addEventListener('click', () => {
@@ -498,7 +882,7 @@ function displayCustomerInfo() {
     }
 }
 
-//새로운 코드
+// 테이블 생성
 function generateEstimateTable() {
     const estimateTableContainer = document.getElementById('estimateTableContainer');
     const tableBody = document.querySelector('#estimateTable tbody');

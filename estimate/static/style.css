@@ -46,6 +46,7 @@ h2 {
     font-size: 30px;
     font-weight: bold;
     color:white;
+    line-height: 0.8;
 }
 
 .detail-option {
@@ -106,4 +107,14 @@ summary::marker {
 #julun-container:hover,
 #coating-container:hover {
     background-color:#FFFF66;
+}
+
+.initializeButton{
+    float: right;
+}
+
+#totalPriceResult,
+#discount{
+    position: fixed; /*고정된 위치로 해야 스크롤에 영향을 받지않는다.*/
+    z-index: 999; /*해당 위치에 어떤게 오더라도 가려지지않도록 z값을 넣는다.*/
 }

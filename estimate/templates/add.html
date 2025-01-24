@@ -5,6 +5,7 @@
         <div class="col">
             <form id="priceForm">
                 <div class="individual-container">
+                    <input type="button" value="초기화" class="initializeButton btn btn-outline-warning" id="initializeCustomer">
                     <h2>고객 정보</h2>
                     <div class="small-container">
                         <label style="font-size:20px;">고객명</label>
@@ -16,6 +17,7 @@
                     </div>
                 </div>
                 <div id="cms-container" class="individual-container">
+                    <input type="button" value="초기화" class="initializeButton btn btn-outline-warning" id="initializeCleaning">
                     <h2>입주청소</h2>
                     <select style="height:30px; width:120px;" id="selectRoomType">
                         <option value="normalType" selected>일반 평수</option>
@@ -75,6 +77,7 @@
                 </div>
                 <div id="paint-container" class="individual-container">
                     <fieldset>
+                        <input type="button" value="초기화" class="initializeButton btn btn-outline-warning" id="initializePaint">
                         <details>
                         <summary><h2>탄성코트</h2></summary>
                             <label for="basic">
@@ -88,19 +91,21 @@
                             <label for="premium">
                                 <input type="radio" id="premium" name="paintOption" value="premium">
                                 프리미엄
-                            </label>
-                            <div class="priceResult" id="paintPriceResult"></div>
+                            </label>                            
                         </details>
+                        <div class="priceResult" id="paintPriceResult"></div>
                     </fieldset>
                 </div>
                 <div id="julun-container" class="individual-container">
                     <fieldset>
+                        <input type="button" value="초기화" class="initializeButton btn btn-outline-warning" id="initializeJulun">
                         <details>
                         <summary><h2>줄눈시공</h2></summary>
                         <div class="row">
                             <div class="col">
                                 <div id="julun-floor" class="detail-option">
-                                    <h3>바닥</h3>
+                                    <h3 style="display:inline">바닥</h3>
+                                    <input type="button" value="초기화" class="initializeButtonDetail btn btn-outline-warning" id="initializeJulun_floor"><br>
                                         <input type="radio" id="julun1_1" name="julunFloor">
                                         <label for="julun1_1">욕실 1개소 &#40;+현관&#41;</label><br>
 
@@ -117,9 +122,11 @@
                                         <label for="julun1_5">거실 타일, 방 포함</label>
                                 </div>
                             </div>
+
                             <div class="col">
                                 <div id="julun-wall" class="detail-option">
-                                    <h3>벽면</h3>
+                                    <h3 style="display:inline">벽면</h3>
+                                    <input type="button" value="초기화" class="initializeButtonDetail btn btn-outline-warning" id="initializeJulun_wall"><br>
                                         <input type="radio" id="julun2_1" name="julunWall">
                                         <label for="julun2_1">욕실 전체_4면 &#40;1개소&#41;</label><br>
 
@@ -138,7 +145,8 @@
                             </div>
                         </div>
                         <div id="julun-silicone" class="detail-option">
-                            <h3>실리콘 오염 방지</h3>
+                            <h3 style="display:inline">실리콘 오염 방지</h3>
+                            <input type="button" value="초기화" class="initializeButtonDetail btn btn-outline-warning" id="initializeJulun_silicone"><br>
                             <input type="radio" id="julun3_1" name="bathroomJulunSilicone">
                             <label for="julun3_1">욕실 1개소</label><br>
 
@@ -147,71 +155,74 @@
                             
                             <input type="checkbox" id="julun3_3" name="kitchenJulunsilicone">
                             <label for="julun3_3">주방</label>
-                        </div>
-                        <div class="priceResult" id="julunPriceResult"></div>
+                        </div>                        
                     </details>
+                    <div class="priceResult" id="julunPriceResult"></div>
                     </fieldset>
                 </div>
                 <div id="coating-container" class="individual-container">
                     <fieldset>
+                        <input type="button" value="초기화" class="initializeButton btn btn-outline-warning" id="initializeCoating">
                         <details>
                         <summary><h2>생활코팅</h2></summary>
                         <div id="coating-kitchen" class="detail-option">
                             <h3>주방 상판코팅</h3>
-                            <input type="radio" id="coating1_1" name="coatingKitchen">
+                            <input type="radio" id="coating1_1" name="kitchenCoating">
                             <label for="coating1_1">인조대리석 &#40;연마작업 &#38; UV코팅&#41;</label>
 
-                            <input type="radio" id="coating1_2" name="coatingKitchen">
+                            <input type="radio" id="coating1_2" name="kitchenCoating">
                             <label for="coating1_2">엔지니어드스톤 &#40;박리작업 &#38; 하이브리드코팅&#41;</label>
                         </div>
                         <div id="coating-nano" class="detail-option">
                             <h3>욕실 나노코팅</h3>
-                            <input type="checkbox" id="coating2_1">
+                            <input type="checkbox" id="coating2_1" name="nanoCoating">
                             <label for="coating2_1">공용 욕실</label>
 
-                            <input type="checkbox" id="coating2_2">
+                            <input type="checkbox" id="coating2_2" name="nanoCoating">
                             <label for="coating2_2">안방 욕실</label>
                         </div>
                         <div id="coating-floorTile" class="detail-option">
                             <h3>바닥 타일코팅</h3>
-                            <input type="checkbox" id="coating3_1">
+                            <input type="checkbox" id="coating3_1" name="floorTile">
                             <label for="coating3_1">공용 욕실</label>
 
-                            <input type="checkbox" id="coating3_2">
+                            <input type="checkbox" id="coating3_2" name="floorTile">
                             <label for="coating3_2">안방 욕실</label>
 
-                            <input type="checkbox" id="coating3_3">
+                            <input type="checkbox" id="coating3_3" name="floorTile">
                             <label for="coating3_3">거실, 주방, 복도</label>
                         </div>
                         <div id="coating-wallTile" class="detail-option">
                             <h3>벽 타일코팅</h3>
-                            <input type="checkbox" id="coating4_1">
+                            <input type="checkbox" id="coating4_1" name="wallTile">
                             <label for="coating4_1">주방 벽면 코팅</label>
 
-                            <input type="checkbox" id="coating4_2">
-                            <label for="coating4_2">욕실 샤워부스 안쪽 벽면</label>
+                            <input type="checkbox" id="coating4_2" name="wallTile">
+                            <label for="coating4_2">욕실 샤워부스 안쪽 벽면</label><br>
 
-                            <input type="checkbox" id="coating4_3">
+                            <input type="checkbox" id="coating4_3" name="wallTile">
                             <label for="coating4_3">공용 욕실 벽면 전체</label>
 
-                            <input type="checkbox" id="coating4_4">
+                            <input type="checkbox" id="coating4_4" name="wallTile">
                             <label for="coating4_4">안방 욕실 벽면 전체</label>
-
-                        </div>
-                        <div class="priceResult" id="coatingPriceResult"></div>
+                        </div>                        
                     </details>
+                    <div class="priceResult" id="coatingPriceResult"></div>
                     </fieldset>
                 </div>                
             </form>
         </div>
         <div class="col">
-            <p style="color:white;">평수가 비어있으면 견적서 생성이 안됩니다. 0이라도 써주세요. 제발 ㅠ</p>
+            <div id="discountDiv">
+                <label style="font-size:20px;">할인 금액</label>
+                <input type="number" id="discount_1">
+            </div>
             <div id="totalPriceResult" class="priceResult"></div>
             <button type="button" id="generateEstimateButton">견적서 생성</button>
             <div id="estimateTableContainer" style="display: none;">
                 <h2>시공 견적서</h2>
-                <p class="customerInfo">고객명: <span id="displayCustomer" class="customerInfo">-</span></p>
-                <p class="customerInfo">주소: <span id="displayAddress" class="customerInfo">-</span></p>
+                <p class="customerInfo">고객명: <span id="displayCustomer">-</span></p>
+                <p class="customerInfo">주   소: <span id="displayAddress">-</span></p>
                 <table id="estimateTable" border="1">
                     <thead>
                         <tr>
@@ -235,7 +246,8 @@
         </div>
     </div>
 </div>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
+{# 아래 코드에서 캐시 무효화를 위해 추가한 ?v={{ time.time() }}를 배포환경에서는 삭제할 것 #}
+<script src="{{ url_for('static', filename='script.js') }}?v={{ time.time() }}"></script>
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 <script src="https://unpkg.com/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
