@@ -146,22 +146,34 @@ function updateRoomTypeVisibility () {
 UIElements.selectRoomType.addEventListener('change', updateRoomTypeVisibility);
 updateRoomTypeVisibility(); // 초기 호출
 
+// 이벤트 핸들러 등록
+document.getElementById('noCleaing').addEventListener('change', function () {
+    if (this.checked) {
+        cleaningPrice = 0; // 청소 금액 초기화
+        warningContainer.style.display = "none";
+        UIElements.cleaningPriceResult.textContent = '';
+    }
+});
 
 //---23평 이상 입주청소, 마루코팅, 새집증후군---// 
-function updateUI() {
+function updateCleaningPrice() {
     const roomSize = UIElements.roomSize();
     const warningContainer = document.getElementById('warningContainer');
     const coatingOption = document.getElementById('coatingOption').value;
     const syndromeCheckbox = document.getElementById('newHouseSyndrome').checked;
     const selectedRoomType = UIElements.selectedRoomType();
     const selectedStructure = UIElements.selectedStructure();
+    const noCleaing = document.getElementById('noCleaing').checked;
 
     // 입주청소 금액 계산
-    if (roomSize) {
+    if (noCleaing) {
+        cleaningPrice = 0;
+        warningContainer.style.display = "none";
+        UIElements.cleaningPriceResult.textContent = '';
+    } else if (roomSize) {
         cleaningPrice = roomSize * 15000;
         UIElements.cleaningPriceResult.textContent = `입주청소 ${cleaningPrice.toLocaleString()}원`;
 
-        // 경고 메시지 표시
         if (roomSize < 23 || roomSize >= 80) {
             warningContainer.textContent = "평수를 정확히 확인해 주세요!";
             warningContainer.style.display = "block";
@@ -169,7 +181,7 @@ function updateUI() {
             warningContainer.style.display = "none";
         }
     } else {
-        cleaningPrice = 0; // 청소 금액 초기화
+        cleaningPrice = 0;
         warningContainer.style.display = "none";
         UIElements.cleaningPriceResult.textContent = '';
     }
@@ -201,6 +213,7 @@ function updateUI() {
     : '';
 
     // 금액 업데이트
+
     totalPriceComponents.cleaning = cleaningPrice;
     totalPriceComponents.floorCoating = floorCoatingPrice;
     totalPriceComponents.syndrome = syndromePrice;
@@ -222,7 +235,6 @@ function updateSmallCleaningPrice(event) {
     
     updateTotalPrice();
 }
-
 
 function handlePaintOption(event) {
     const paintPriceResult = document.getElementById('paintPriceResult');
@@ -254,7 +266,7 @@ let selectedJulunOptions = []; // 선택된 줄눈 옵션을 저장할 배열
 // 줄눈가격
 function handleJulunOption() {
     let totalPrice = 0;
-    const roomSize = parseInt(document.getElementById('size').value) || 0;
+    const roomSize = UIElements.roomSize();
 
     let floorTotal = 0;
     let wallTotal = 0;
@@ -515,7 +527,7 @@ function nanoCoatingPrice() {
 function floorTileCoatingPrice() {
     let price = 0;
     const selectedOptions = [];
-    const roomSize = parseInt(document.getElementById('size').value) || 0;
+    const roomSize = UIElements.roomSize();
 
     // 선택된 체크박스 가져오기
     const selectedFloorTiles = document.querySelectorAll('input[name="floorTile"]:checked');
@@ -614,37 +626,90 @@ function totalCoatingPrice() {
     };
 }
 
+// 할인 금액 계산 및 적용
 function updateDiscount() {
-    const discountInput = UIElements.discount_1(); // 할인 금액 호출
-    totalPriceComponents.discount = -Math.abs(discountInput); // 음수로 저장
-    updateTotalPrice(); // 최종 금액 업데이트
+    const roomSize = UIElements.roomSize();
+    const cleaningPrice = totalPriceComponents.cleaning || 0; // 청소 금액
+    const coatingOption = document.getElementById('coatingOption').value; // 마루코팅 옵션
+    const syndromeChecked = document.getElementById('newHouseSyndrome').checked; // 새집증후군 체크 여부
+
+    let discount = 0; // 총 할인 금액
+    const discountMessages = []; // 할인 메시지를 저장할 배열
+
+    // 조건 3: 청소 금액 > 0, 마루코팅 옵션 선택 & 새집증후군 체크
+    if (cleaningPrice > 0 && coatingOption !== 'noFloorCoating' && syndromeChecked) {
+        const discountAmount = roomSize * 2000; // 평당 2000원 할인
+        discount += discountAmount;
+        discountMessages.push(`조건 3: 마루코팅과 새집증후군 동시 선택으로 ${discountAmount.toLocaleString()}원 할인`);
+    }
+    // 조건 1: 청소 금액 > 0, 마루코팅 옵션 선택 (X가 아님) - 조건 3이 적용되지 않은 경우에만 실행
+    else if (cleaningPrice > 0 && coatingOption !== 'noFloorCoating') {
+        const discountAmount = roomSize * 1000; // 평당 1000원 할인
+        discount += discountAmount;
+        discountMessages.push(`조건 1: 마루코팅 선택으로 ${discountAmount.toLocaleString()}원 할인`);
+    }
+    // 조건 2: 청소 금액 > 0, 새집증후군 체크 - 조건 3이 적용되지 않은 경우에만 실행
+    else if (cleaningPrice > 0 && syndromeChecked) {
+        const discountAmount = roomSize * 1000; // 평당 1000원 할인
+        discount += discountAmount;
+        discountMessages.push(`조건 2: 새집증후군 시공으로 ${discountAmount.toLocaleString()}원 할인`);
+    }
+
+    // 사용자 입력 할인 금액
+    const userDiscount = parseInt(document.getElementById('discount_1').value) || 0;
+    discount += -Math.abs(userDiscount);
+    if (userDiscount) {
+        discountMessages.push(`사용자 입력 할인: ${userDiscount.toLocaleString()}원`);
+    }
+
+    // 할인 금액 반영
+    totalPriceComponents.discount = -Math.abs(discount);
+
+    // 할인 메시지 업데이트
+    const discountInfoContainer = document.getElementById('discountInfoContainer');
+    discountInfoContainer.innerHTML = ''; // 기존 메시지 초기화
+
+    // 새로운 할인 메시지 추가
+    discountMessages.forEach(message => {
+        const discountMessageDiv = document.createElement('div'); // 새로운 div 생성
+        discountMessageDiv.className = 'discount'; // 클래스 추가
+        discountMessageDiv.textContent = message; // 메시지 추가
+        discountInfoContainer.appendChild(discountMessageDiv); // 부모 컨테이너에 추가
+    });
+
+    // 최종 금액 업데이트
+    updateTotalPrice();
 }
 
 // 최종 금액 계산
 function updateTotalPrice() {
     const totalPriceResult = document.getElementById('totalPriceResult');
     const total = Object.values(totalPriceComponents).reduce((sum, value) => sum + value, 0);
-    totalPriceResult.textContent = `총 합계: ${total.toLocaleString()}원`;
+    totalPriceResult.textContent = `총 합계: ${Math.max(total, 0).toLocaleString()}원`;
 }
 
 
 //--이벤트 리스너 추가--//
 // 할인 이벤트리스너
 document.getElementById('discount_1').addEventListener('input', updateDiscount);
-
+document.getElementById('size').addEventListener('input', updateDiscount);
+document.getElementById('coatingOption').addEventListener('change', updateDiscount);
+document.getElementById('newHouseSyndrome').addEventListener('change', updateDiscount);
 // 청소, 마루코팅, 새집증후군
 
-// 평수 입력 업데이트
-document.getElementById('size').addEventListener('input', updateUI);
+// 청소 이벤트 리스너
+document.getElementById('selectRoomType').addEventListener('change', updateCleaningPrice);
+document.getElementById('size').addEventListener('input', updateCleaningPrice);
+document.getElementById('noCleaing').addEventListener('change', updateCleaningPrice);
 
-document.getElementById('smallType').addEventListener('change', updateUI);
+document.getElementById('smallType').addEventListener('change', updateCleaningPrice);
 
 // 마루코팅 옵션 변경 업데이트
-document.getElementById('coatingOption').addEventListener('change', updateUI);
+document.getElementById('coatingOption').addEventListener('change', updateCleaningPrice);
 
 
 // 새집증후군 체크박스 업데이트
-document.getElementById('newHouseSyndrome').addEventListener('change', updateUI);
+document.getElementById('newHouseSyndrome').addEventListener('change', updateCleaningPrice);
 
 // 소형 평수 구조 선택
 document.querySelectorAll('input[name="structure"]').forEach(radio => {
@@ -786,8 +851,8 @@ function addJulunEventListeners() {
 // 줄눈 이벤트 리스너 초기화
 addJulunEventListeners();
 
+// 라디오 버튼 재클릭 취소 함수
 let lastClickedRadio = null;
-
 function toggleRadio(event) {
     const radio = event.target;
 
@@ -812,6 +877,7 @@ document.querySelectorAll('input[type="radio"]').forEach(radio => {
 
 // 라디오 버튼 그룹에 따른 금액 초기화 함수
 function resetPriceForRadio(groupName) {
+    const roomSize = UIElements.roomSize();
     if (groupName === 'paintOption') {
         totalPriceComponents.paint = 0;
         document.getElementById('paintPriceResult').textContent = '0원';
@@ -819,15 +885,14 @@ function resetPriceForRadio(groupName) {
         totalPriceComponents.julun_floor = 0;
         document.getElementById('julunPriceResult').textContent = `${calculateJulunTotal().toLocaleString()}원`;
     } else if (groupName === 'julunFloorArea') {
-        // julunFloorArea 계산 로직
-        const roomSize = parseInt(document.getElementById('size').value) || 0;
+        // 줄눈 시공 영역 계산
         const selectedFloorArea = document.querySelector('input[name="julunFloorArea"]:checked');
 
         if (selectedFloorArea) {
-            const pricePerPyeong = parseInt(selectedFloorArea.id === 'julun1_4' ? 22000 : 40000); // 거실 또는 거실+방의 평당 가격
-            totalPriceComponents.julun_floor = roomSize * pricePerPyeong; // 총 금액 계산
+            const pricePerPyeong = selectedFloorArea.id === 'julun1_4' ? 22000 : 40000; // 거실 or 거실+방 평당 가격
+            totalPriceComponents.julun_floor = roomSize * pricePerPyeong; // 평수에 따라 계산
         } else {
-            totalPriceComponents.julun_floor = 0; // 선택되지 않았을 때
+            totalPriceComponents.julun_floor = 0; // 선택된 옵션이 없을 때 초기화
         }
 
         // 결과 반영
@@ -841,6 +906,9 @@ function resetPriceForRadio(groupName) {
     } else if (groupName === 'kitchenCoating') {
         totalPriceComponents.coating_kitchen = 0;
         document.getElementById('coatingPriceResult').textContent = `0원`;
+    } else if (groupName === 'cleaningOption') {
+        totalPriceComponents.cleaning = 0;
+        document.getElementById('cleaningPriceResult').textContent = `0원`;
     }
 }
 

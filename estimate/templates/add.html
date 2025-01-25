@@ -66,7 +66,11 @@
                     </select>
                     <br>
                     <label for="newHouseSyndrome">새집증후군 시공</label>
-                    <input type="checkbox" id="newHouseSyndrome">
+                    <input type="checkbox" id="newHouseSyndrome"><br>
+                    <label for="noCleaing">
+                        <input type="radio" id="noCleaing" name="cleaningOption" value="noCleaing">
+                        청소 미진행
+                    </label><br>
                     <div id="smallCleaningPriceResult" class="priceResult"></div>
                     <div id="cleaningPriceResult" class="priceContainer"></div>
                     <div id="warningContainer" style="display: none; color: red; font-weight: bold; margin-top: 10px;"></div>
@@ -214,9 +218,10 @@
         </div>
         <div class="col">
             <div id="discountDiv">
-                <label style="font-size:20px;">할인 금액</label>
+                <label style="font-size:20px;">할인 금액 입력</label>
                 <input type="number" id="discount_1">
             </div>
+            <div id="discountInfoContainer"></div> <!-- 할인 메시지가 추가되는 컨테이너 -->
             <div id="totalPriceResult" class="priceResult"></div>
             <button type="button" id="generateEstimateButton">견적서 생성</button>
             <div id="estimateTableContainer" style="display: none;">
@@ -247,7 +252,7 @@
     </div>
 </div>
 {# 아래 코드에서 캐시 무효화를 위해 추가한 ?v={{ time.time() }}를 배포환경에서는 삭제할 것 #}
-<script src="{{ url_for('static', filename='script.js') }}?v={{ time.time() }}"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}?v={{ time.time() }}"></script>
 <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
 <script src="https://unpkg.com/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
