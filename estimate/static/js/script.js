@@ -613,9 +613,9 @@ function totalCoatingPrice() {
         ...floorTileResult.selectedOptions,
     ];
 
-    // 콘솔 출력용 디버깅 정보
-    console.log("선택된 옵션:", selectedCoatingOptions);
-    console.log("총 코팅 금액:", totalPrice);
+    // // 콘솔 출력용 디버깅 정보
+    // console.log("선택된 옵션:", selectedCoatingOptions);
+    // console.log("총 코팅 금액:", totalPrice);
 
     document.getElementById('coatingPriceResult').textContent = `${totalPrice.toLocaleString()}원`;
     updateTotalPrice();
@@ -640,30 +640,30 @@ function updateDiscount() {
     if (cleaningPrice > 0 && coatingOption !== 'noFloorCoating' && syndromeChecked) {
         const discountAmount = roomSize * 2000; // 평당 2000원 할인
         discount += discountAmount;
-        discountMessages.push(`조건 3: 마루코팅과 새집증후군 동시 선택으로 ${discountAmount.toLocaleString()}원 할인`);
+        discountMessages.push(`청소와 함께라면 3: ${discountAmount.toLocaleString()}원`);
     }
     // 조건 1: 청소 금액 > 0, 마루코팅 옵션 선택 (X가 아님) - 조건 3이 적용되지 않은 경우에만 실행
     else if (cleaningPrice > 0 && coatingOption !== 'noFloorCoating') {
         const discountAmount = roomSize * 1000; // 평당 1000원 할인
         discount += discountAmount;
-        discountMessages.push(`조건 1: 마루코팅 선택으로 ${discountAmount.toLocaleString()}원 할인`);
+        discountMessages.push(`청소와 함께라면 1: ${discountAmount.toLocaleString()}원`);
     }
     // 조건 2: 청소 금액 > 0, 새집증후군 체크 - 조건 3이 적용되지 않은 경우에만 실행
     else if (cleaningPrice > 0 && syndromeChecked) {
         const discountAmount = roomSize * 1000; // 평당 1000원 할인
         discount += discountAmount;
-        discountMessages.push(`조건 2: 새집증후군 시공으로 ${discountAmount.toLocaleString()}원 할인`);
+        discountMessages.push(`청소와 함께라면 2: ${discountAmount.toLocaleString()}원`);
     }
 
     // 사용자 입력 할인 금액
     const userDiscount = parseInt(document.getElementById('discount_1').value) || 0;
-    discount += -Math.abs(userDiscount);
+    discount += Math.abs(userDiscount); // 양수 값으로 유지
     if (userDiscount) {
-        discountMessages.push(`사용자 입력 할인: ${userDiscount.toLocaleString()}원`);
+        discountMessages.push(`직접 입력 할인: ${userDiscount.toLocaleString()}원`);
     }
 
-    // 할인 금액 반영
-    totalPriceComponents.discount = -Math.abs(discount);
+    // 할인 금액을 양수로 저장
+    totalPriceComponents.discount = discount;
 
     // 할인 메시지 업데이트
     const discountInfoContainer = document.getElementById('discountInfoContainer');
@@ -683,9 +683,33 @@ function updateDiscount() {
 
 // 최종 금액 계산
 function updateTotalPrice() {
-    const totalPriceResult = document.getElementById('totalPriceResult');
-    const total = Object.values(totalPriceComponents).reduce((sum, value) => sum + value, 0);
-    totalPriceResult.textContent = `총 합계: ${Math.max(total, 0).toLocaleString()}원`;
+    // HTML 요소 가져오기
+    const totalPriceBeforeDiscountEl = document.getElementById('totalPriceBeforeDiscount');
+    const discountAmountEl = document.getElementById('discountAmount');
+    const totalPriceResultFinalEl = document.getElementById('totalPriceResultFinal');
+    const estimateTableTotalPrice = document.getElementById('estimateTotalPrice');
+
+    // 1. 할인 전 총 금액 계산 (discount 제외)
+    const totalBeforeDiscount = Object.entries(totalPriceComponents)
+        .filter(([key]) => key !== "discount") // discount 제외
+        .reduce((sum, [, value]) => sum + value, 0);
+
+    // 2. 할인 금액 (양수 값으로 저장되었음)
+    const discountAmount = totalPriceComponents.discount;
+
+    // 3. 할인 후 최종 금액
+    const totalAfterDiscount = totalBeforeDiscount - discountAmount;
+
+    // 4. 결과를 HTML 요소에 삽입
+    totalPriceBeforeDiscountEl.textContent = `할인 전 금액: ${totalBeforeDiscount.toLocaleString()}원`;
+    discountAmountEl.textContent = `할인 금액: ${discountAmount.toLocaleString()}원`;
+    totalPriceResultFinalEl.textContent = `할인 후 최종 금액: ${Math.max(totalAfterDiscount, 0).toLocaleString()}원`;
+    estimateTableTotalPrice.textContent = `${Math.max(totalAfterDiscount, 0).toLocaleString()}원`
+
+    // 콘솔 출력 (디버깅용)
+    console.log(`할인 전 금액: ${totalBeforeDiscount.toLocaleString()}원`);
+    console.log(`할인 금액: ${discountAmount.toLocaleString()}원`);
+    console.log(`할인 후 최종 금액: ${Math.max(totalAfterDiscount, 0).toLocaleString()}원`);
 }
 
 
@@ -851,30 +875,6 @@ function addJulunEventListeners() {
 // 줄눈 이벤트 리스너 초기화
 addJulunEventListeners();
 
-// 라디오 버튼 재클릭 취소 함수
-let lastClickedRadio = null;
-function toggleRadio(event) {
-    const radio = event.target;
-
-    if (lastClickedRadio === radio) {
-        radio.checked = false; // 선택 해제
-        lastClickedRadio = null; // 초기화
-
-        // 금액 초기화 (라디오 버튼의 name 속성을 기반으로 설정)
-        resetPriceForRadio(radio.name);
-
-        // UI 업데이트
-        updateTotalPrice();
-    } else {
-        lastClickedRadio = radio; // 현재 클릭된 라디오 버튼 저장
-    }
-}
-
-// 모든 라디오 버튼에 이벤트 리스너 추가
-document.querySelectorAll('input[type="radio"]').forEach(radio => {
-    radio.addEventListener('click', toggleRadio);
-});
-
 // 라디오 버튼 그룹에 따른 금액 초기화 함수
 function resetPriceForRadio(groupName) {
     const roomSize = UIElements.roomSize();
@@ -960,8 +960,7 @@ function generateEstimateTable() {
     tableBody.innerHTML = '';
 
     let totalEstimatePrice = 0;
-    let rowsAdded = false; // 항목이 추가되었는지 확인
-
+    let rowsAdded = false; // 항목 추가 여부 확인
 
     const formatPrice = (price) => (typeof price === 'number' ? price.toLocaleString() : '0');
 
@@ -1055,8 +1054,20 @@ function generateEstimateTable() {
     const coatingDetails = selectedCoatingOptions.length > 0 ? selectedCoatingOptions.join('<br>') : '선택된 옵션 없음';
     addEstimateRow('생활 코팅', coatingDetails, totalPriceComponents.coating);
 
+    // 할인 내역 추가
+    const discountInfoContainer = document.getElementById('discountInfoContainer');
+    if (discountInfoContainer) {
+        const discountMessages = discountInfoContainer.querySelectorAll('.discount');
+        discountMessages.forEach((discountMessage) => {
+            const discountText = discountMessage.textContent;
+            const discountValue = parseInt(discountText.replace(/\D/g, '')) || 0; // 숫자만 추출
+            addEstimateRow('할인', discountText, -discountValue);
+        });
+    }
+
     // 총합계 업데이트
     totalPriceElement.textContent = `${formatPrice(totalEstimatePrice)}원`;
+    console.log("최종 총합계:", totalEstimatePrice);
 
     // 테이블 컨테이너 표시 여부
     if (rowsAdded) {
@@ -1066,6 +1077,7 @@ function generateEstimateTable() {
         alert('최소 하나의 항목을 선택해야 견적서를 생성할 수 있습니다.');
     }
 }
+
 // PDF 다운로드 버튼 클릭 시 PDF 생성
 document.getElementById('downloadEstimatePDF').addEventListener('click', function () {
     const element = document.getElementById('estimateTableContainer');

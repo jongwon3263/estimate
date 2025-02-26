@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}현장 목록{% endblock %}
+
+{% block content %}
+    <h2>현장 목록</h2>
+    <ul>
+        {% for site in sites %}
+            <li>{{ site }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

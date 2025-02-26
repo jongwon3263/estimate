@@ -84,18 +84,20 @@
                         <input type="button" value="초기화" class="initializeButton btn btn-outline-warning" id="initializePaint">
                         <details>
                         <summary><h2>탄성코트</h2></summary>
-                            <label for="basic">
-                                <input type="radio" id="basic" name="paintOption" value="basic">
+                        <div class="list-group">
+                            <label for="basic" class="list-group-item">
+                                <input class="form-check-input me-1" type="radio" id="basic" name="paintOption" value="basic">
                                 베이직
-                            </label><br>
-                            <label for="standard">
-                                <input type="radio" id="standard" name="paintOption" value="standard">
+                            </label>
+                            <label for="standard" class="list-group-item">
+                                <input class="form-check-input me-1" type="radio" id="standard" name="paintOption" value="standard">
                                 스탠다드
-                            </label><br>
-                            <label for="premium">
-                                <input type="radio" id="premium" name="paintOption" value="premium">
+                            </label>
+                            <label for="premium" class="list-group-item">
+                                <input class="form-check-input me-1" type="radio" id="premium" name="paintOption" value="premium">
                                 프리미엄
-                            </label>                            
+                            </label>        
+                        </div>                    
                         </details>
                         <div class="priceResult" id="paintPriceResult"></div>
                     </fieldset>
@@ -138,7 +140,10 @@
                                         <label for="julun2_2">욕실 전체_4면 &#40;2개소&#41;</label><br>
 
                                         <input type="checkbox" id="julun2_3" name="julunWallMore">
-                                        <label for="julun2_3">샤워부스 내부 &#47; 욕조 라인</label><br>
+                                        <label for="julun2_3">샤워부스 안쪽 벽면</label><br>
+
+                                        <input type="checkbox" id="julun2_6" name="julunWallMore">
+                                        <label for="julun2_6">욕조 라인</label><br>
                                         
                                         <input type="checkbox" id="julun2_4" name="julunWallMore">
                                         <label for="julun2_4">주방 벽면</label><br>
@@ -171,44 +176,67 @@
                         <summary><h2>생활코팅</h2></summary>
                         <div id="coating-kitchen" class="detail-option">
                             <h3>주방 상판코팅</h3>
-                            <input type="radio" id="coating1_1" name="kitchenCoating">
-                            <label for="coating1_1">인조대리석 &#40;연마작업 &#38; UV코팅&#41;</label>
-
-                            <input type="radio" id="coating1_2" name="kitchenCoating">
-                            <label for="coating1_2">엔지니어드스톤 &#40;박리작업 &#38; 하이브리드코팅&#41;</label>
+                            <div class="list-group">
+                                <label class="list-group-item" for="coating1_1">
+                                    <input class="form-check-input me-1" type="radio" id="coating1_1" name="kitchenCoating">
+                                    인조대리석 &#40;연마작업 &#38; UV코팅&#41;
+                                </label>
+                                <label class="list-group-item" for="coating1_2">
+                                    <input class="form-check-input me-1" type="radio" id="coating1_2" name="kitchenCoating">
+                                    엔지니어드스톤 &#40;박리작업 &#38; 하이브리드코팅&#41;
+                                </label>
+                            <div>
                         </div>
                         <div id="coating-nano" class="detail-option">
                             <h3>욕실 나노코팅</h3>
-                            <input type="checkbox" id="coating2_1" name="nanoCoating">
-                            <label for="coating2_1">공용 욕실</label>
-
-                            <input type="checkbox" id="coating2_2" name="nanoCoating">
-                            <label for="coating2_2">안방 욕실</label>
+                            <div class="list-group">
+                                <label class="list-group-item" for="coating2_1">
+                                    <input class="form-check-input me-1" type="checkbox" id="coating2_1" name="nanoCoating">
+                                    공용 욕실
+                                </label>
+                                <label class="list-group-item" for="coating2_2">
+                                    <input class="form-check-input me-1" type="checkbox" id="coating2_2" name="nanoCoating">
+                                    안방 욕실
+                                </label>
+                            <div>
                         </div>
                         <div id="coating-floorTile" class="detail-option">
                             <h3>바닥 타일코팅</h3>
-                            <input type="checkbox" id="coating3_1" name="floorTile">
-                            <label for="coating3_1">공용 욕실</label>
-
-                            <input type="checkbox" id="coating3_2" name="floorTile">
-                            <label for="coating3_2">안방 욕실</label>
-
-                            <input type="checkbox" id="coating3_3" name="floorTile">
-                            <label for="coating3_3">거실, 주방, 복도</label>
+                            <div class="list-group">
+                                <label class="list-group-item" for="coating3_1">
+                                    <input class="form-check-input me-1"  type="checkbox" id="coating3_1" name="floorTile">
+                                    공용 욕실
+                                </label>
+                                <label class="list-group-item" for="coating3_2">
+                                    <input class="form-check-input me-1"  type="checkbox" id="coating3_2" name="floorTile">
+                                    안방 욕실
+                                </label>
+                                <label class="list-group-item" for="coating3_3">
+                                    <input class="form-check-input me-1"  type="checkbox" id="coating3_3" name="floorTile">
+                                    거실, 주방, 복도
+                                </label>
+                            </div>
                         </div>
                         <div id="coating-wallTile" class="detail-option">
                             <h3>벽 타일코팅</h3>
-                            <input type="checkbox" id="coating4_1" name="wallTile">
-                            <label for="coating4_1">주방 벽면 코팅</label>
-
-                            <input type="checkbox" id="coating4_2" name="wallTile">
-                            <label for="coating4_2">욕실 샤워부스 안쪽 벽면</label><br>
-
-                            <input type="checkbox" id="coating4_3" name="wallTile">
-                            <label for="coating4_3">공용 욕실 벽면 전체</label>
-
-                            <input type="checkbox" id="coating4_4" name="wallTile">
-                            <label for="coating4_4">안방 욕실 벽면 전체</label>
+                            <div class="list-group">
+                                <label class="list-group-item" for="coating4_1">
+                                    <input class="form-check-input me-1" type="checkbox" id="coating4_1" name="wallTile">
+                                    주방 벽면 코팅
+                                </label>
+                                <label class="list-group-item" for="coating4_2">
+                                    <input class="form-check-input me-1" type="checkbox" id="coating4_2" name="wallTile">
+                                    욕실 샤워부스 안쪽 벽면
+                                </label>
+                                <label class="list-group-item" for="coating4_3">
+                                    <input class="form-check-input me-1" type="checkbox" id="coating4_3" name="wallTile">
+                                    공용 욕실 벽면 전체
+                                </label>
+                                <label class="list-group-item" for="coating4_4">
+                                    <input class="form-check-input me-1" type="checkbox" id="coating4_4" name="wallTile">
+                                    안방 욕실 벽면 전체
+                                </label>
+                            </div>
                         </div>                        
                     </details>
                     <div class="priceResult" id="coatingPriceResult"></div>
@@ -222,7 +250,9 @@
                 <input type="number" id="discount_1">
             </div>
             <div id="discountInfoContainer"></div> <!-- 할인 메시지가 추가되는 컨테이너 -->
-            <div id="totalPriceResult" class="priceResult"></div>
+            <div id="totalPriceBeforeDiscount" class="totalPriceResult"></div>
+            <div id="discountAmount" class="totalPriceResult"></div>
+            <div id="totalPriceResultFinal" class="totalPriceResult"></div>
             <button type="button" id="generateEstimateButton">견적서 생성</button>
             <div id="estimateTableContainer" style="display: none;">
                 <h2>시공 견적서</h2>
@@ -231,9 +261,12 @@
                 <table id="estimateTable" border="1">
                     <thead>
                         <tr>
-                            <th>항목</th>
-                            <th>세부 내용</th>
-                            <th>금액</th>
+                            <th colspan="2">총계</th>
+                            <th colspan="2">계약금</th>
+                        </tr>
+                        <tr>
+                            <th colspan="2" id="estimateTotalPrice"></th>
+                            <th colspan="2">100,000원</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -242,7 +275,7 @@
                     <tfoot>
                         <tr>
                             <th colspan="2">총 합계</th>
-                            <th id="estimateTotalPrice">0원</th>
+                            <th id="estimateTotalPrice"></th>
                         </tr>
                     </tfoot>
                 </table>

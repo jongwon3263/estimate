@@ -35,6 +35,13 @@ h2 {
     color:blue;
 }
 
+.totalPriceResult{
+    margin-top: 20px;
+    font-size: 30px;
+    font-weight: bold;
+    color: #f0f0f0;
+}
+
 .priceContainer {
     margin-top: 10px;
     font-size: 30px;
@@ -118,3 +125,89 @@ summary::marker {
     position: fixed; /*고정된 위치로 해야 스크롤에 영향을 받지않는다.*/
     z-index: 999; /*해당 위치에 어떤게 오더라도 가려지지않도록 z값을 넣는다.*/
 }
+
+/*팀 리스트 관련 css*/
+
+.teamBody {
+    font-family: Arial, sans-serif; /* 선택사항: 전체 글꼴 설정 */
+    margin: 20px;
+    padding-left: 10vh;
+    padding-right: 10vh;
+}
+
+.btn-custom {
+    width: 100%;
+    height: 200px;
+    font-size: 34px;
+    font-weight: bold;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    color: white;
+    border: none;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
+    filter: brightness(0.5);
+    transition: filter 0.3s ease, transform 0.2s ease, z-index 0.2s ease;
+    position: relative; /* z-index를 적용하기 위해 추가 */
+}
+
+.btn-custom:hover {
+    filter: brightness(0.7);
+    transform: scale(1.3);
+    z-index: 10; /* 다른 요소 위로 올라오도록 설정 */
+    transition: filter 0.4s ease, transform 0.4s ease;
+}
+
+.btn-custom.active {
+    filter: brightness(1.1); /* 클릭된 버튼은 더 밝게 표시 */
+    transform: scale(1.5); /* 클릭된 버튼은 확대 상태 유지 */
+    z-index: 10; /* 다른 요소 위로 유지 */
+}
+
+.job {
+    font-size: 2rem;
+    font-weight: 500;
+    margin-top: 1rem;
+}
+
+
+/* alert 요소 자체에 여백 추가 */
+.alert {
+    font-size: 2rem;
+    margin-top: 2rem;
+    margin: 7vh;
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.blank {
+    padding: 15vh;
+}
+
+.float{
+    position:fixed;
+    width:300px;
+    height:90px;
+    bottom:40px;
+    right:40px;
+    background-color:rgb(58, 255, 206);
+    color:#000000;
+    border-radius:50px;
+    text-align:center;
+    font-size: 50px;
+  }
+  
+  .my-float{
+    margin-top:22px;
+  }
