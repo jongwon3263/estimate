@@ -1,28 +1,28 @@
-from flask import Flask, render_template
+from flask import Flask
 from dotenv import load_dotenv
-import time
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
 load_dotenv()
 
+db = SQLAlchemy()
+migrate = Migrate()
+
 def create_app():
     app = Flask(__name__)
+    app.config.from_object('estimate.config')
     
-    #라우트 정의
-    @app.route('/')
-    def home():
-        return render_template('1_input.html', time=time)
+    # ORM
+    db.init_app(app)
+    migrate.init_app(app, db)
+    from . import models
     
-    @app.route('/quotations')
-    def quotation_history():
-        return render_template('2_quotation_history.html')
-
-    @app.route('/sites')
-    def site_list():
-        sites = ["서울 오피스텔", "부산 아파트", "대전 빌라", "광주 주택"]
-        return render_template('3_site_list.html', sites=sites)
-
-    @app.route('/teams')
-    def team_list():
-        return render_template('4_team_list.html')
+    # blueprint
+    from .views import input_view, company_view, site_view, work_view, service_view
+    app.register_blueprint(input_view.bp)
+    app.register_blueprint(company_view.bp)
+    app.register_blueprint(site_view.bp)
+    app.register_blueprint(work_view.bp)
+    app.register_blueprint(service_view.bp)
 
     return app  # Flask 인스턴스 반환

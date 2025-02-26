@@ -251,7 +251,7 @@
             </div>
             <div id="discountInfoContainer"></div> <!-- 할인 메시지가 추가되는 컨테이너 -->
             <div id="totalPriceBeforeDiscount" class="totalPriceResult"></div>
-            <div id="discountAmount" class="totalPriceResult"></div>
+            <!-- <div id="discountAmount" class="totalPriceResult"></div> -->
             <div id="totalPriceResultFinal" class="totalPriceResult"></div>
             <button type="button" id="generateEstimateButton">견적서 생성</button>
             <div id="estimateTableContainer" style="display: none;">
@@ -274,8 +274,8 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <th colspan="2">총 합계</th>
-                            <th id="estimateTotalPrice"></th>
+                            <th colspan="2" id="discountAmount"></th>
+                            <th colspan="2"></th>
                         </tr>
                     </tfoot>
                 </table>

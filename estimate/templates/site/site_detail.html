@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ site.address }}</h1>
+<div>
+    {{ site.residence_type }}<br>
+    {{ site.room_size }}<br>
+    {{ site.depositor }}<br>
+    {{ site.customer_phone }}<br>
+    {{ site.contract_date }}<br>
+</div>
+<div>
+    <ul>
+        {% for work in site.work_set %}
+            <li>{{ work.work_time }}</li>
+            <li>{{ work.details }}</li>
+            <li>{{ work.memo }}</li>
+        {% endfor %}
+    </ul>
+</div>
+<form action="{{ url_for('work.add_work', site_id=site.id) }}" method="post">
+    <label for="service">서비스:</label>
+    <select name="service" id="service" onchange="filterCompanies()">
+        <option value="">-- 선택 --</option>
+        {% for service in services %}
+            <option value="{{ service.id }}">{{ service.name }}</option>
+        {% endfor %}
+    </select>
+    <br>
+
+    <label for="company">업체:</label>
+    <select name="company" id="company">
+        <option value="">-- 선택 --</option>
+        {% for company in companies %}
+            <option value="{{ company.id }}" data-service="{{ company.service_id }}">{{ company.name }}</option>
+        {% endfor %}
+    </select>
+    <br>
+
+    <label for="start_date">시작 날짜:</label>
+    <input type="date" name="start_date" id="start_date" required>
+    <br>
+
+    <label for="end_date">종료 날짜:</label>
+    <input type="date" name="end_date" id="end_date" required>
+    <br>
+
+    <label for="company_cost">업체 도급가:</label>
+    <input type="number" name="company_cost" id="company_cost" min="0" required>
+    <br>
+
+    <label for="customer_price">고객 판매가:</label>
+    <input type="number" name="customer_price" id="customer_price" min="0" required>
+    <br>
+
+    <label for="work_time">작업 시간대:</label>
+    <textarea name="work_time" id="work_time" rows="2"></textarea><br>
+
+    <label for="details">상세 내용:</label>
+    <textarea name="details" id="details" rows="4"></textarea><br>
+    
+    <label for="memo">메모:</label>
+    <textarea name="memo" id="memo" rows="3"></textarea>
+    
+    <input type="submit" value="등록">
+</form>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let today = new Date().toISOString().split("T")[0];
+
+        let startDateInput = document.getElementById("start_date");
+        let endDateInput = document.getElementById("end_date");
+
+        // 시작 날짜는 오늘 이후로만 선택 가능
+        startDateInput.setAttribute("min", today);
+
+        startDateInput.addEventListener("change", function() {
+            let selectedStartDate = startDateInput.value;
+            endDateInput.setAttribute("min", selectedStartDate);
+        });
+    });
+
+    function filterCompanies() {
+        let selectedService = document.getElementById("service").value;
+        let companySelect = document.getElementById("company");
+        let options = companySelect.getElementsByTagName("option");
+
+        for (let i = 1; i < options.length; i++) {
+            let serviceId = options[i].getAttribute("data-service");
+            if (selectedService === serviceId || selectedService === "") {
+                options[i].style.display = "block";
+            } else {
+                options[i].style.display = "none";
+            }
+        }
+
+        companySelect.value = "";
+    }
+</script>
+{% endblock %}

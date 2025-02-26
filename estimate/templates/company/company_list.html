@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>업체</h2>
+    {% if company_list %}
+        <ul>
+        {% for company in company_list %}
+            <li><a href="{{ url_for('company.detail', company_id=company.id) }}">{{ company.name }}</a></li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>업체가 없습니다.</p>
+    {% endif %}
+{% endblock %}
