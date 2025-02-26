@@ -98,6 +98,17 @@ class Work(db.Model):
     customer_price = db.Column(db.Integer)
     #진행상태
     status = db.Column(db.Text())
+
+    def __init__(self, **kwargs):
+        """id 자동 생성"""
+        super().__init__(**kwargs)
+
+        if not self.id:  # id가 없으면 자동 생성
+            self.id = self.generate_id()
+
+    def generate_id(self):
+        """ ID 형식: site_id-service_id """
+        return f"{self.site_id}-{self.service_id}"  # 예: 250226-001-CL
     
 class Service(db.Model):
     __tablename__ = 'services'

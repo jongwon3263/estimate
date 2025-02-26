@@ -2,21 +2,30 @@
 {% block content %}
 <h1>{{ site.address }}</h1>
 <div>
-    {{ site.residence_type }}<br>
-    {{ site.room_size }}<br>
-    {{ site.depositor }}<br>
-    {{ site.customer_phone }}<br>
-    {{ site.contract_date }}<br>
+    거주형태: {{ site.residence_type }}<br>
+    평수: {{ site.room_size }}<br>
+    입금자명: {{ site.depositor }}<br>
+    고객 연락처: {{ site.customer_phone }}<br>
+    계약일: {{ site.contract_date }}<br>
 </div>
 <div>
     <ul>
         {% for work in site.work_set %}
-            <li>{{ work.work_time }}</li>
-            <li>{{ work.details }}</li>
-            <li>{{ work.memo }}</li>
+        <br>
+        <li>시공: {{ work.service.name }}</li>
+        <li>업체: {{ work.company.name if work.company else '미정' }}</li>
+        <li>시공일자: {{ work.start_date }}</li>
+        <li>작업 시간대: {{ work.work_time }}</li>
+        <li>상세 사항: {{ work.details }}</li>
+        <li>메모: {{ work.memo }}</li>
+        <li>상태: {{ work.status }}</li>
+        <br>
         {% endfor %}
     </ul>
 </div>
+<hr style="width:50%;">
+
+<h2>시공 추가</h2>
 <form action="{{ url_for('work.add_work', site_id=site.id) }}" method="post">
     <label for="service">서비스:</label>
     <select name="service" id="service" onchange="filterCompanies()">
@@ -60,6 +69,18 @@
     
     <label for="memo">메모:</label>
     <textarea name="memo" id="memo" rows="3"></textarea>
+    <br>
+
+    <label for="status">상태:</label>
+    <select name="status" id="status" required>
+        <option value="">-- 선택 --</option>
+        <option value="미배정">미배정</option>
+        <option value="시공예정">시공예정</option>
+        <option value="내일시공예정">내일시공예정</option>
+        <option value="시공중">시공중</option>
+        <option value="시공완료">시공완료</option>
+        <option value="사건발생">사건발생</option>
+    </select>
     
     <input type="submit" value="등록">
 </form>
