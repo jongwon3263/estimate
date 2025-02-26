@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- 질문 등록 -->
+<div class="container">
+    <h5 class="my-3 border-bottom pb-2">현장 등록</h5>
+    <form method="post" class="my-3">
+        {{ form.csrf_token }}
+        <div class="mb-3">
+            <label for="address">주소</lable>
+            <input type="text" class="form-control" name="address" id="address">
+        </div>    
+        <div class="mb-3">
+            <label for="residence_type">건물 형태</lable>
+            <input class="form-control" name="residence_type" id="residence_type">
+        </div>
+        <div class="mb-3">
+            <label for="room_size">평수 or 집 구조</lable>
+            <input class="form-control" name="room_size" id="room_size">
+        </div>
+        <div class="mb-3">
+            <label for="depositor">입금자명</lable>
+            <input class="form-control" name="depositor" id="depositor">
+        </div>
+        <div class="mb-3">
+            <label for="customer_phone">고객 연락처</lable>
+            <input class="form-control" name="customer_phone" id="customer_phone">
+        </div>
+        <div class="mb-3">
+            <label for="notes">메모</lable>
+            <textarea class="form-control" name="notes" id="notes"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}

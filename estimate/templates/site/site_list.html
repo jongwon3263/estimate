@@ -10,4 +10,5 @@
     {% else %}
         <p>현장이 없습니다.</p>
     {% endif %}
+    <a href="{{ url_for('site.create') }}" class="btn btn-primary">현장 등록하기</a>
 {% endblock %}
