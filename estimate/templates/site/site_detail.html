@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 <!--현장 정보-->
+<h5>현장 정보</h5>
 <h1>{{ site.address }}</h1>
 <div>
     <ul>
-        <li>거주형태: {{ site.residence_type }}</li>
+        <li>건물 형태: {{ site.residence_type }}</li>
         <li>평수: {{ site.room_size }}</li>
         <li>입금자명: {{ site.depositor }}</li>
         <li>고객 연락처: {{ site.customer_phone }}</li>
@@ -13,21 +14,27 @@
         <li>계약일: {{ site.contract_date }}</li>
     </ul>
 </div>
-<!--시공 목록-->
-{% for work in site.work_set %}
-<div class="card my-3">
-    <div class="card-body">
-        <div class="card-text" style="white-space: pre-line;">시공: {{ work.service.name }}</div>
-        <div class="card-text" style="white-space: pre-line;">업체: {{ work.company.name if work.company else '미정' }}</div>
-        <div class="card-text" style="white-space: pre-line;">시공일자: {{ work.start_date }}</div>
-        <div class="card-text" style="white-space: pre-line;">작업 시간대: {{ work.work_time }}</div>
-        <div class="card-text" style="white-space: pre-line;">상세 사항: {{ work.details }}</div>
-        <div class="card-text" style="white-space: pre-line;">메모: {{ work.memo }}</div>
-        <div class="card-text" style="white-space: pre-line;">상태: {{ work.status }}</div>
-        <div class="card-text" style="white-space: pre-line;">업체 도급가: {{ work.company_cost | format_currency }}</div>
-    </div>
+<!--현장 정보 수정-->
+<div class="my-3">
+    <a href="{{ url_for('site.modify', site_id=site.id) }}" class="btn btn-sm btn-outline-primary">현장정보 수정</a>
 </div>
-{% endfor %}
+<!--시공 목록-->
+<div>
+    <ul>
+        {% for work in site.work_set %}
+        <br>
+        <li>시공: {{ work.service.name }}</li>
+        <li>업체: {{ work.company.name if work.company else '미정' }}</li>
+        <li>시공일자: {{ work.start_date }}</li>
+        <li>작업 시간대: {{ work.work_time }}</li>
+        <li>상세 사항: {{ work.details }}</li>
+        <li>메모: {{ work.memo }}</li>
+        <li>상태: {{ work.status }}</li>
+        <li>업체 도급가: {{ work.company_cost | format_currency }}</li>
+        <br>
+        {% endfor %}
+    </ul>
+</div>
 <hr style="width:50%;">
 
 <h2>시공 추가</h2>

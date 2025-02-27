@@ -36,6 +36,8 @@ class Site(db.Model):
     remaining_balance = db.Column(db.Integer)
     #계약일
     contract_date = db.Column(db.Date())
+    #수정일자
+    modify_date = db.Column(db.DateTime(), nullable=True)
     
     def __init__(self, **kwargs):
         """객체가 생성될 때 id 자동 생성"""
@@ -98,6 +100,8 @@ class Work(db.Model):
     customer_price = db.Column(db.Integer)
     #진행상태
     status = db.Column(db.Text())
+    #수정일자
+    modify_date = db.Column(db.DateTime(), nullable=True)
 
     def __init__(self, **kwargs):
         """id 자동 생성"""

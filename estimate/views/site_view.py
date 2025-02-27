@@ -39,3 +39,17 @@ def create():
         db.session.commit()
         return redirect(url_for('site.index'))
     return render_template('site/site_form.html', form=form)
+
+@bp.route('/modify/<string:site_id>', methods=('GET', 'POST'))
+def modify(site_id):
+    site = Site.query.get_or_404(site_id)
+    if request.method == 'POST':  # POST 요청
+        form = SiteForm()
+        if form.validate_on_submit():
+            form.populate_obj(site)
+            site.modify_date = datetime.now()  # 수정일시 저장
+            db.session.commit()
+            return redirect(url_for('site.detail', site_id=site_id))
+    else:  # GET 요청
+        form = SiteForm(obj=site)
+    return render_template('site/site_form.html', form=form)
