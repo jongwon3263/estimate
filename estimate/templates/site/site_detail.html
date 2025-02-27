@@ -1,105 +1,153 @@
 {% extends "base.html" %}
 {% block content %}
 <!--현장 정보-->
-<h5>현장 정보</h5>
-<h1>{{ site.address }}</h1>
-<div>
+<h2>현장 상세 정보</h2>
+
+<!-- 기존 정보 표시 영역 -->
+<div id="site-info">
     <ul>
-        <li>건물 형태: {{ site.residence_type }}</li>
-        <li>평수: {{ site.room_size }}</li>
-        <li>입금자명: {{ site.depositor }}</li>
-        <li>고객 연락처: {{ site.customer_phone }}</li>
+        <li>건물 형태: <span id="residence_type_text">{{ site.residence_type }}</span></li>
+        <li>평수: <span id="room_size_text">{{ site.room_size }}</span></li>
+        <li>입금자명: <span id="depositor_text">{{ site.depositor }}</span></li>
+        <li>고객 연락처: <span id="customer_phone_text">{{ site.customer_phone }}</span></li>
         <li>총 판매 금액: {{ site.total_sales | format_currency }}</li>
         <li>계약금: {{ site.remaining_balance | format_currency }}</li>
         <li>계약일: {{ site.contract_date }}</li>
     </ul>
+    <button id="site-edit-btn" class="btn btn-warning">현장정보 수정</button>
+    <button id="" class="btn btn-warning">현장 삭제</button>
 </div>
-<!--현장 정보 수정-->
-<div class="my-3">
-    <a href="{{ url_for('site.modify', site_id=site.id) }}" class="btn btn-sm btn-outline-primary">현장정보 수정</a>
-</div>
-<!--시공 목록-->
-<div>
-    <ul>
-        {% for work in site.work_set %}
-        <br>
-        <li>시공: {{ work.service.name }}</li>
-        <li>업체: {{ work.company.name if work.company else '미정' }}</li>
-        <li>시공일자: {{ work.start_date }}</li>
-        <li>작업 시간대: {{ work.work_time }}</li>
-        <li>상세 사항: {{ work.details }}</li>
-        <li>메모: {{ work.memo }}</li>
-        <li>상태: {{ work.status }}</li>
-        <li>업체 도급가: {{ work.company_cost | format_currency }}</li>
-        <br>
-        {% endfor %}
-    </ul>
+<!-- 현장정보 수정 입력 폼 (처음엔 숨겨져 있음) -->
+<div id="edit-form-1" style="display: none;">
+    <form id="site-edit-form">
+        {{ site_form.hidden_tag() }}
+
+        <label for="residence_type">건물 형태</label>
+        {{ site_form.residence_type(class="form-control", id="residence_type") }}
+
+        <label for="room_size">평수</label>
+        {{ site_form.room_size(class="form-control", id="room_size") }}
+
+        <label for="depositor">입금자명</label>
+        {{ site_form.depositor(class="form-control", id="depositor") }}
+
+        <label for="customer_phone">고객 연락처</label>
+        {{ site_form.customer_phone(class="form-control", id="customer_phone") }}
+
+        <button type="submit" class="btn btn-success mt-3">저장</button>
+        <button type="button" id="cancel-btn" class="btn btn-secondary mt-3">취소</button>
+    </form>
 </div>
 <hr style="width:50%;">
+<!-- 시공 목록 -->
+<div id="work-info">
+    {% for work in site.work_set %}
+        <!-- 기존 정보 표시 -->
+        <div id="work-display-{{ work.id }}">
+            <p><strong>시공:</strong> <span id="service-{{ work.id }}">{{ work.service.name }}</span></p>
+            <p><strong>업체:</strong> <span id="company-{{ work.id }}">{{ work.company.name if work.company else '미정' }}</span></p>
+            <p><strong>시작:</strong> <span id="start_date-{{ work.id }}">{{ work.start_date }}</span></p>
+            <p><strong>종료:</strong> <span id="end_date-{{ work.id }}">{{ work.end_date }}</span></p>
+            <p><strong>작업 시간대:</strong> <span id="work_time-{{ work.id }}">{{ work.work_time }}</span></p>
+            <p><strong>상세 사항:</strong> <span id="details-{{ work.id }}">{{ work.details }}</span></p>
+            <p><strong>메모:</strong> <span id="memo-{{ work.id }}">{{ work.memo }}</span></p>
+            <p><strong>상태:</strong> <span id="status-{{ work.id }}">{{ work.status }}</span></p>
+            <p><strong>업체 도급가:</strong> <span id="company_cost-{{ work.id }}">{{ work.company_cost | format_currency }}</span></p>
+            <button class="btn btn-warning edit-btn" data-work-id="{{ work.id }}">수정</button>
+        </div>
+
+        <!-- 수정 입력 폼 (처음엔 숨김) -->
+        <div id="edit-form-{{ work.id }}" style="display: none;">
+            <form class="work-edit-form" method="POST" action="{{ url_for('site.edit_work', work_id=work.id) }}">
+                {{ work_edit_forms[work.id].hidden_tag() }}
+
+                <label for="service-{{ work.id }}">시공</label>
+                <select class="form-control" id="service-{{ work.id }}" name="service">
+                    <option value="">시공 선택</option>
+                    {% for service in all_services %}
+                        <option value="{{ service.id }}" {% if service.id == work.service_id %}selected{% endif %}>
+                            {{ service.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <label for="company-{{ work.id }}">업체</label>
+                <select class="form-control" id="company-{{ work.id }}" name="company">
+                    <option value="">업체 선택</option>
+                    {% for company in work_edit_forms[work.id].company.choices %}
+                        <option value="{{ company[0] }}" {% if company[0] == work.company_id %}selected{% endif %}>
+                            {{ company[1] }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <label for="start_date-{{ work.id }}">시작</label>
+                {{ work_edit_forms[work.id].start_date(class="form-control", id="start_date-{{ work.id }}", value=work.start_date) }}
+
+                <label for="end_date-{{ work.id }}">종료</label>
+                {{ work_edit_forms[work.id].end_date(class="form-control", id="end_date-{{ work.id }}", value=work.end_date) }}
+
+                <label for="work_time-{{ work.id }}">작업 시간대</label>
+                {{ work_edit_forms[work.id].work_time(class="form-control", id="work_time-{{ work.id }}", value=work.work_time) }}
+
+                <label for="details-{{ work.id }}">상세 사항</label>
+                {{ work_edit_forms[work.id].details(class="form-control", id="details-{{ work.id }}", value=work.details) }}
+
+                <label for="memo-{{ work.id }}">메모</label>
+                {{ work_edit_forms[work.id].memo(class="form-control", id="memo-{{ work.id }}", value=work.memo) }}
+
+                <label for="company_cost-{{ work.id }}">업체 도급가</label>
+                {{ work_edit_forms[work.id].company_cost(class="form-control", id="company_cost-{{ work.id }}", value=work.company_cost) }}
+
+                <button type="submit" class="btn btn-success mt-3">저장</button>
+                <button type="button" class="btn btn-secondary cancel-btn" data-work-id="{{ work.id }}">취소</button>
+            </form>
+        </div>
+    <hr style="width:50%;">
+    {% endfor %}
+</div>
 
 <h2>시공 추가</h2>
 <form action="{{ url_for('work.add_work', site_id=site.id) }}" method="post" class="my-3">
+    {{ work_add_form.hidden_tag() }}
 
-    <label for="service">서비스:</label>
-    <select name="service" id="service" onchange="filterCompanies()">
-        <option value="">-- 선택 --</option>
-        {% for service in services %}
-            <option value="{{ service.id }}">{{ service.name }}</option>
-        {% endfor %}
+    <label for="service">{{ work_add_form.service.label }}</label>
+    {{ work_add_form.service(class="form-control", id="service") }}
+
+    <label for="company">{{ work_add_form.company.label }}</label>
+    <select id="company" name="company" class="form-control">
+        <option value="">업체 선택</option>
     </select>
-    <br>
 
-    <label for="company">업체:</label>
-    <select name="company" id="company">
-        <option value="">-- 선택 --</option>
-        {% for company in companies %}
-            <option value="{{ company.id }}" data-service="{{ company.service_id }}">{{ company.name }}</option>
-        {% endfor %}
-    </select>
-    <br>
+    <label for="start_date">{{ work_add_form.start_date.label }}</label>
+    {{ work_add_form.start_date(class="form-control") }}
 
-    <label for="start_date">시작 날짜:</label>
-    <input type="date" name="start_date" id="start_date" required>
-    <br>
+    <label for="end_date">{{ work_add_form.end_date.label }}</label>
+    {{ work_add_form.end_date(class="form-control") }}
 
-    <label for="end_date">종료 날짜:</label>
-    <input type="date" name="end_date" id="end_date" required>
-    <br>
-
-    <label for="company_cost">업체 도급가:</label>
-    <input type="number" name="company_cost" id="company_cost" min="0" required>
-    <br>
-
-    <label for="customer_price">고객 판매가:</label>
-    <input type="number" name="customer_price" id="customer_price" min="0" required>
-    <br>
-
-    <label for="work_time">작업 시간대:</label>
-    <textarea name="work_time" id="work_time" rows="2"></textarea><br>
-
-    <label for="details">상세 내용:</label>
-    <textarea name="details" id="details" rows="4"></textarea><br>
+    <label for="company_cost">{{ work_add_form.company_cost.label }}</label>
+    {{ work_add_form.company_cost(class="form-control", value=work_add_form.company_cost.data or 0) }}
     
-    <label for="memo">메모:</label>
-    <textarea name="memo" id="memo" rows="3"></textarea>
-    <br>
+    <label for="customer_price">{{ work_add_form.customer_price.label }}</label>
+    {{ work_add_form.customer_price(class="form-control", value=work_add_form.customer_price.data or 0) }}
 
-    <label for="status">상태:</label>
-    <select name="status" id="status" required>
-        <option value="">-- 선택 --</option>
-        <option value="미배정">미배정</option>
-        <option value="시공예정">시공예정</option>
-        <option value="내일시공예정">내일시공예정</option>
-        <option value="시공중">시공중</option>
-        <option value="시공완료">시공완료</option>
-        <option value="사건발생">사건발생</option>
-    </select>
-    
-    <input type="submit" value="등록">
+    <label for="work_time">{{ work_add_form.work_time.label }}</label>
+    {{ work_add_form.work_time(class="form-control") }}
+
+    <label for="details">{{ work_add_form.details.label }}</label>
+    {{ work_add_form.details(class="form-control") }}
+
+    <label for="memo">{{ work_add_form.memo.label }}</label>
+    {{ work_add_form.memo(class="form-control") }}
+
+    <label for="status">{{ work_add_form.status.label }}</label>
+    {{ work_add_form.status(class="form-control") }}
+
+    <button type="submit" class="btn btn-primary mt-3">등록</button>
 </form>
 
-
 <script>
+    // 날짜 선택 제한 기능
     document.addEventListener("DOMContentLoaded", function() {
         let today = new Date().toISOString().split("T")[0];
 
@@ -115,6 +163,7 @@
         });
     });
 
+    // 업체 필터 기능
     function filterCompanies() {
         let selectedService = document.getElementById("service").value;
         let companySelect = document.getElementById("company");
@@ -131,5 +180,166 @@
 
         companySelect.value = "";
     }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // ✅ "시공 추가" 폼의 드롭다운 변경 이벤트
+        let mainServiceDropdown = document.getElementById("service");
+        let mainCompanyDropdown = document.getElementById("company");
+    
+        if (mainServiceDropdown) {
+            mainServiceDropdown.addEventListener("change", function () {
+                updateCompanyDropdown(this.value, mainCompanyDropdown);
+            });
+        }
+    
+        // ✅ "시공 수정" 폼의 각 드롭다운 변경 이벤트
+        document.querySelectorAll("[id^=service-]").forEach(serviceDropdown => {
+            serviceDropdown.addEventListener("change", function () {
+                let workId = this.id.split("-")[1];  // work.id 가져오기
+                let companyDropdown = document.getElementById("company-" + workId);
+    
+                updateCompanyDropdown(this.value, companyDropdown);
+            });
+        });
+    
+        // ✅ 업체 목록을 업데이트하는 공통 함수
+        function updateCompanyDropdown(serviceId, companyDropdown) {
+            if (!companyDropdown) return;
+            
+            // 기존 옵션 초기화
+            companyDropdown.innerHTML = '<option value="">업체 선택</option>';
+    
+            if (serviceId) {
+                fetch(`/get_companies/${serviceId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(company => {
+                            let option = document.createElement("option");
+                            option.value = company.id;
+                            option.textContent = company.name;
+                            companyDropdown.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error("업체 목록 불러오기 오류:", error));
+            }
+        }
+    });
+</script>
+
+<script>
+    // 현장 수정
+    document.addEventListener("DOMContentLoaded", function() {
+        const siteEditBtn = document.getElementById("site-edit-btn");
+        const siteInfo = document.getElementById("site-info");
+        const editForm1 = document.getElementById("edit-form-1");
+        const cancelBtn = document.getElementById("cancel-btn");
+        const editFormElement1 = document.getElementById("site-edit-form");
+
+        // 수정 버튼 클릭 시 정보 숨기고 폼 보이기
+        siteEditBtn.addEventListener("click", function() {
+            siteInfo.style.display = "none";
+            editForm1.style.display = "block";
+        });
+
+        // 취소 버튼 클릭 시 폼 숨기고 기존 정보 보이기
+        cancelBtn.addEventListener("click", function() {
+            editForm1.style.display = "none";
+            siteInfo.style.display = "block";
+        });
+
+        // 폼 제출 시 AJAX로 데이터 전송 (Flask API로 업데이트 요청)
+        editFormElement1.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(editFormElement1);
+
+            fetch("{{ url_for('site.modify_site', site_id=site.id) }}", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // UI 업데이트 (입력된 값을 화면에 반영)
+                    document.getElementById("residence_type_text").textContent = data.residence_type;
+                    document.getElementById("room_size_text").textContent = data.room_size;
+                    document.getElementById("depositor_text").textContent = data.depositor;
+                    document.getElementById("customer_phone_text").textContent = data.customer_phone;
+
+                    // 폼 숨기고 기존 정보 다시 표시
+                    editForm1.style.display = "none";
+                    siteInfo.style.display = "block";
+                } else {
+                    alert("수정 실패: " + data.error);
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+    });
+</script>
+
+
+<script>
+    // 시공 수정
+    document.addEventListener("DOMContentLoaded", function() {
+        // 모든 '수정' 버튼에 클릭 이벤트 추가
+        document.querySelectorAll(".edit-btn").forEach(button => {
+            button.addEventListener("click", function() {
+                let workId = this.getAttribute("data-work-id");
+
+                // 기존 정보 숨기기 & 수정 폼 보이기
+                document.getElementById(`work-display-${workId}`).style.display = "none";
+                document.getElementById(`edit-form-${workId}`).style.display = "block";
+            });
+        });
+
+        // 모든 '취소' 버튼에 클릭 이벤트 추가
+        document.querySelectorAll(".cancel-btn").forEach(button => {
+            button.addEventListener("click", function() {
+                let workId = this.getAttribute("data-work-id");
+
+                // 수정 폼 숨기기 & 기존 정보 다시 표시
+                document.getElementById(`edit-form-${workId}`).style.display = "none";
+                document.getElementById(`work-display-${workId}`).style.display = "block";
+            });
+        });
+
+        // 시공 수정 폼 제출 시 AJAX 요청 보내기
+        document.querySelectorAll(".work-edit-form").forEach(form => {
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+                let workId = this.getAttribute("data-work-id");
+                let formData = new FormData(this);
+
+                fetch(`/work_modify/${workId}`, {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // UI 업데이트
+                        document.getElementById(`service-${workId}`).textContent = data.service;
+                        document.getElementById(`company-${workId}`).textContent = data.company;
+                        document.getElementById(`start_date-${workId}`).textContent = data.start_date;
+                        document.getElementById(`end_date-${workId}`).textContent = data.end_date;
+                        document.getElementById(`work_time-${workId}`).textContent = data.work_time;
+                        document.getElementById(`details-${workId}`).textContent = data.details;
+                        document.getElementById(`memo-${workId}`).textContent = data.memo;
+                        document.getElementById(`company_cost-${workId}`).textContent = data.company_cost;
+
+                        // 수정 폼 숨기고 기존 정보 다시 표시
+                        document.getElementById(`edit-form-${workId}`).style.display = "none";
+                        document.getElementById(`work-display-${workId}`).style.display = "block";
+                    } else {
+                        alert("수정 실패: " + data.error);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            });
+        });
+    });
 </script>
 {% endblock %}
