@@ -1,13 +1,48 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2>업체</h2>
-    {% if company_list %}
+<div class="container">
+    <h2>업체 리스트</h2>
+    <h3>청소</h3>
         <ul>
-        {% for company in company_list %}
-            <li><a href="{{ url_for('company.detail', company_id=company.id) }}">{{ company.name }}</a></li>
-        {% endfor %}
+            {% for CL in cleaning_companies %}
+                <li><a href="{{ url_for('company.detail', company_id=CL.id) }}">{{ CL.name }}</a></li>
+            {% endfor %}
         </ul>
-    {% else %}
-        <p>업체가 없습니다.</p>
-    {% endif %}
+    <h3>줄눈</h3>
+        <ul>
+            {% for GR in grout_companies %}
+                <li><a href="{{ url_for('company.detail', company_id=GR.id) }}">{{ GR.name }}</a></li>
+            {% endfor %}
+        </ul>
+    <h3>탄성코트</h3>
+    <ul>
+        {% for PT in paint_companies %}
+            <li><a href="{{ url_for('company.detail', company_id=PT.id) }}">{{ PT.name }}</a></li>
+        {% endfor %}
+    </ul>
+    <h3>생활코팅</h3>
+    <ul>
+        {% for CT in coating_companies %}
+            <li><a href="{{ url_for('company.detail', company_id=CT.id) }}">{{ CT.name }}</a></li>
+        {% endfor %}
+    </ul>
+    <h3>새집증후군 솔루션</h3>
+    <ul>
+        {% for NH in newhouse_companies %}
+            <li><a href="{{ url_for('company.detail', company_id=NH.id) }}">{{ NH.name }}</a></li>
+        {% endfor %}
+    </ul>
+    <h3>가전분해청소</h3>
+    <ul>
+        {% for AP in appliance_companies %}
+            <li><a href="{{ url_for('company.detail', company_id=AP.id) }}">{{ AP.name }}</a></li>
+        {% endfor %}
+    </ul>
+    <h3>기타</h3>
+    <ul>
+        {% for ET in etc_companies %}
+            <li><a href="{{ url_for('company.detail', company_id=ET.id) }}">{{ ET.name }}</a></li>
+        {% endfor %}
+    </ul>
+</div>        
 {% endblock %}

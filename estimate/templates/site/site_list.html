@@ -1,14 +1,40 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="container my-3">
     <h2>현장</h2>
-    {% if site_list %}
-        <ul>
-        {% for site in site_list %}
-            <li><a href="{{ url_for('site.detail', site_id=site.id) }}">{{ site.address }}</a></li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>현장이 없습니다.</p>
-    {% endif %}
+
+    <table class="table" style="width:50vw;">
+        <thead>
+            <tr class="table-primary">
+                <th style="width:10%">번호</th>
+                <th>주소</th>
+                <th>고객명</th>
+                <th>계약일</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if site_list %}
+            {% for site in site_list %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>
+                    <a href="{{ url_for('site.detail', site_id=site.id) }}">{{ site.address }}</a>
+                </td>
+                <td>
+                    <a href="{{ url_for('site.detail', site_id=site.id) }}">{{ site.depositor }}</a>
+                </td>
+                <td>
+                    <span>{{ site.contract_date }}</span>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="3">질문이 없습니다.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
     <a href="{{ url_for('site.create') }}" class="btn btn-primary">현장 등록하기</a>
+</div>
 {% endblock %}

@@ -28,16 +28,18 @@ class Site(db.Model):
     depositor = db.Column(db.Text())
     #고객 연락처
     customer_phone = db.Column(db.Text())
-    #총매출액
-    total_sales = db.Column(db.Integer)
+    #고객 판매가
+    customer_price = db.Column(db.Integer, default=0)
     #계약금
-    contract_deposit = db.Column(db.Integer)
+    contract_deposit = db.Column(db.Integer, default=0)
     #잔금
-    remaining_balance = db.Column(db.Integer)
+    remaining_balance = db.Column(db.Integer, default=0)
     #계약일
     contract_date = db.Column(db.Date())
     #수정일자
     modify_date = db.Column(db.DateTime(), nullable=True)
+    #거래 유형
+    transaction_type = db.Column(db.Text())
     
     def __init__(self, **kwargs):
         """객체가 생성될 때 id 자동 생성"""
@@ -62,6 +64,10 @@ class Site(db.Model):
             new_number = 1  # 첫 번째 데이터면 001부터 시작
 
         return f"{today_str}-{new_number:03d}"  # 3자리 숫자로 맞추기
+    
+    def update_remaining_balance(self):
+        """고객 판매가와 계약금 변경 시 잔금을 자동 업데이트"""
+        self.remaining_balance = max(self.customer_price - self.contract_deposit, 0)
     
 class Work(db.Model):
     __tablename__ = 'works'

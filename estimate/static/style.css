@@ -1,11 +1,30 @@
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: darkslateblue;
+    font-weight: bold;
+}
+
 body {
     background-color: #c4d7d9;
     color: black;
 }
 
+li {
+    margin-top: 1vh;
+}
+
 h2 {
     font-size: 30px;    
     font-weight: bold;
+}
+
+.container {
+    margin-top: 5vh;
 }
 
 /* 컨테이너 스타일 */
@@ -210,4 +229,8 @@ summary::marker {
   
   .my-float{
     margin-top:22px;
+  }
+
+  .work-add-container{
+    width: 50vh;
   }
