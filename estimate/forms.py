@@ -1,8 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SelectField, DateField, IntegerField, SubmitField, DecimalField
+from wtforms import StringField, TextAreaField, SelectField, DateField, IntegerField, SubmitField, DecimalField, BooleanField
 from wtforms.validators import DataRequired, NumberRange
 
 class SiteForm(FlaskForm):
+    district = StringField('지역')
     address = TextAreaField('주소')
     residence_type = TextAreaField('주거 형태')
     room_size = TextAreaField('평수')
@@ -11,6 +12,7 @@ class SiteForm(FlaskForm):
     notes = TextAreaField('메모')
     
 class SiteEditForm(FlaskForm):
+    district = StringField('지역')
     address = StringField('주소')
     residence_type = StringField('주거 형태')
     room_size = StringField('평수')
@@ -29,6 +31,7 @@ class SiteEditForm(FlaskForm):
         ],
         validators=[DataRequired()], default="일반"
     )
+    archive = IntegerField('아카이브')
     
     def process_formdata(self, valuelist):
         if valuelist:
@@ -52,7 +55,6 @@ class WorkAddForm(FlaskForm):
         choices=[
             ('미배정', '미배정'),
             ('시공예정', '시공예정'),
-            ('내일시공예정', '내일시공예정'),
             ('시공중', '시공중'),
             ('시공완료', '시공완료'),
             ('사건발생', '사건발생'),
@@ -75,7 +77,6 @@ class WorkEditForm(FlaskForm):
         choices=[
             ('미배정', '미배정'),
             ('시공예정', '시공예정'),
-            ('내일시공예정', '내일시공예정'),
             ('시공중', '시공중'),
             ('시공완료', '시공완료'),
             ('사건발생', '사건발생'),

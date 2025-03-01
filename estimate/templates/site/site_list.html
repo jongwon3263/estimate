@@ -2,8 +2,29 @@
 {% block content %}
 <div class="container my-3">
     <h2>현장</h2>
-
-    <table class="table" style="width:50vw;">
+    <div class="col-6">
+        <div class="filter-group">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="today-works" name="today-works" value="yes">
+                <label class="form-check-label" for="today-works">오늘 시공</label>
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="tomorrow-works" name="tomorrow-works" value="yes">
+                <label class="form-check-label" for="tomorrow-works">내일 시공</label>
+            </div>
+        </div>
+        <div class="search-group">
+            <select id="search_filter">
+                <option value="전체 내용">전체 내용</option>
+                <option value="주소">주소</option>
+                <option value="고객 연락처">고객 연락처</option>
+                <option value="입금자명">입금자명</option>
+            </select>
+            <input type="text" id="search_kw" class="form-control">
+            <button class="btn btn-outline-primary" type="button" id="btn_search">찾기</button>
+        </div>
+    </div>
+    <table class="table" style="width:70vw;">
         <thead>
             <tr class="table-primary">
                 <th style="width:10%">번호</th>
@@ -26,6 +47,7 @@
                 <td>
                     <span>{{ site.contract_date }}</span>
                 </td>
+
             </tr>
             {% endfor %}
             {% else %}
@@ -37,4 +59,73 @@
     </table>
     <a href="{{ url_for('site.create') }}" class="btn btn-primary">현장 등록하기</a>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function updateSearch() {
+            const keyword = document.getElementById("search_kw").value.trim();
+            const filter = document.getElementById("search_filter").value;
+            const todayWorks = document.getElementById("today-works").checked ? "yes" : "";
+            const tomorrowWorks = document.getElementById("tomorrow-works").checked ? "yes" : "";
+    
+            const searchParams = new URLSearchParams(window.location.search); // 현재 URL 파라미터 가져오기
+    
+            // 기존 파라미터 유지
+            searchParams.set("filter", filter);
+            if (keyword) {
+                searchParams.set("keyword", keyword);
+            } else {
+                searchParams.delete("keyword");
+            }
+    
+            // 체크박스 상태 반영
+            if (todayWorks) {
+                searchParams.set("today-works", "yes");
+            } else {
+                searchParams.delete("today-works");
+            }
+    
+            if (tomorrowWorks) {
+                searchParams.set("tomorrow-works", "yes");
+            } else {
+                searchParams.delete("tomorrow-works");
+            }
+    
+            // 모든 필터가 해제되었을 경우 초기 상태로 돌아가기
+            if (!searchParams.has("today-works") && !searchParams.has("tomorrow-works") && !searchParams.has("keyword")) {
+                window.location.href = "{{ url_for('site.index') }}";
+            } else {
+                window.location.href = "{{ url_for('site.index') }}" + "?" + searchParams.toString();
+            }
+        }
+    
+        // 현재 URL의 파라미터를 읽어 체크박스 상태 유지
+        function restoreCheckboxState() {
+            const searchParams = new URLSearchParams(window.location.search);
+            if (searchParams.has("today-works")) {
+                document.getElementById("today-works").checked = true;
+            }
+            if (searchParams.has("tomorrow-works")) {
+                document.getElementById("tomorrow-works").checked = true;
+            }
+        }
+    
+        // 페이지 로드 시 체크박스 상태 복원
+        restoreCheckboxState();
+    
+        // 검색 버튼 클릭 시 실행
+        document.getElementById("btn_search").addEventListener("click", function () {
+            const keyword = document.getElementById("search_kw").value.trim();
+            if (keyword.length === 0) {
+                alert("검색어를 입력하세요.");
+                return;
+            }
+            updateSearch();
+        });
+    
+        // 체크박스 변경 시 즉시 필터링 (해제 시 전체 리스트 복원)
+        document.getElementById("today-works").addEventListener("change", updateSearch);
+        document.getElementById("tomorrow-works").addEventListener("change", updateSearch);
+    });
+    </script>
 {% endblock %}

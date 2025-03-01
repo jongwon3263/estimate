@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime, timedelta
 
 from flask import render_template, Blueprint, request, url_for, jsonify, flash
 from werkzeug.utils import redirect
@@ -12,7 +12,53 @@ bp = Blueprint('site', __name__, url_prefix='/')
 
 @bp.route('/')
 def index():
-    site_list = Site.query.order_by(Site.id.desc())
+    filter_option = request.args.get("filter", "전체 내용")
+    keyword = request.args.get("keyword", "").strip()
+    today_works = request.args.get("today-works")
+    tomorrow_works = request.args.get("tomorrow-works")
+
+    query = Site.query.filter(Site.archive == 0)
+
+    # 오늘, 내일 날짜 설정
+    today = date.today()
+    tomorrow = today + timedelta(days=1)
+
+    # 선택된 체크박스에 따라 필터링할 site_id 목록 가져오기
+    site_ids = set()
+    if today_works:
+        today_sites = db.session.query(Work.site_id).filter(
+            Work.start_date <= today, Work.end_date >= today
+        ).distinct()
+        site_ids.update([site_id for site_id, in today_sites])
+
+    if tomorrow_works:
+        tomorrow_sites = db.session.query(Work.site_id).filter(
+            Work.start_date <= tomorrow, Work.end_date >= tomorrow
+        ).distinct()
+        site_ids.update([site_id for site_id, in tomorrow_sites])
+
+    # site_id 필터 적용 (선택된 경우)
+    if site_ids:
+        query = query.filter(Site.id.in_(site_ids))
+
+    # 검색어 필터 적용
+    if keyword:
+        if filter_option == "주소":
+            query = query.filter(Site.address.contains(keyword))
+        elif filter_option == "고객 연락처":
+            query = query.filter(Site.customer_phone.contains(keyword))
+        elif filter_option == "입금자명":
+            query = query.filter(Site.depositor.contains(keyword))
+        else:
+            query = query.filter(
+                (Site.address.contains(keyword)) |
+                (Site.customer_phone.contains(keyword)) |
+                (Site.depositor.contains(keyword))
+            )
+
+    # 최종 필터링된 목록 가져오기
+    site_list = query.order_by(Site.id.desc()).all()
+
     return render_template('site/site_list.html', site_list=site_list)
 
 @bp.route('/site_detail/<string:site_id>/', methods=['GET'])
@@ -62,6 +108,7 @@ def create():
     form = SiteForm()
     if request.method == 'POST' and form.validate_on_submit():
         site = Site(
+            district=form.district.data,
             address=form.address.data,
             residence_type=form.residence_type.data,
             room_size=form.room_size.data,
@@ -74,6 +121,76 @@ def create():
         db.session.commit()
         return redirect(url_for('site.index'))
     return render_template('site/site_form.html', form=form)
+
+@bp.route('/modify/<string:site_id>', methods=['POST'])
+def modify_site(site_id):
+    site = Site.query.get_or_404(site_id)
+
+    site.district = request.form.get('district')
+    site.address = request.form.get('address')
+    site.residence_type = request.form.get('residence_type')
+    site.room_size = request.form.get('room_size')
+    site.depositor = request.form.get('depositor')
+    site.customer_phone = request.form.get('customer_phone')
+
+    # 🔹 숫자로 변환하여 저장 (콤마 제거 후 정수 변환)
+    customer_price = request.form.get('customer_price', "0").replace(",", "")
+    contract_deposit = request.form.get('contract_deposit', "0").replace(",", "")
+
+    try:
+        site.customer_price = int(customer_price)  # 🔹 정수 변환
+    except ValueError:
+        site.customer_price = 0
+
+    try:
+        site.contract_deposit = int(contract_deposit)  # 🔹 정수 변환
+    except ValueError:
+        site.contract_deposit = 0
+
+    site.update_remaining_balance()
+    site.transaction_type = request.form.get('transaction_type')
+    site.modify_date = datetime.now()
+
+    db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "district": site.district,
+        "address": site.address,
+        "residence_type": site.residence_type,
+        "room_size": site.room_size,
+        "depositor": site.depositor,
+        "customer_phone": site.customer_phone,
+        "customer_price": site.customer_price,  # ✅ 정수 값 반환
+        "contract_deposit": site.contract_deposit,  # ✅ 정수 값 반환
+        "remaining_balance": site.remaining_balance,  # ✅ 자동 계산된 값 반환
+        "transaction_type": site.transaction_type
+    })
+
+    
+@bp.route('/site/archive/<string:site_id>', methods=['POST'])
+def archive_site(site_id):
+    site = Site.query.get_or_404(site_id)
+
+    try:
+        site.archive = True  # ✅ Boolean 값으로 설정
+        db.session.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
+    
+@bp.route('/work/delete/<string:work_id>', methods=['POST'])
+def delete_work(work_id):
+    work = Work.query.get_or_404(work_id)
+
+    try:
+        db.session.delete(work)  # ✅ 시공 삭제
+        db.session.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @bp.route('/work_add/<string:site_id>', methods=['GET', 'POST'])
 def add_work(site_id):
@@ -116,48 +233,6 @@ def get_companies(service_id):
     
     return jsonify(company_list)
 
-@bp.route('/modify/<string:site_id>', methods=['POST'])
-def modify_site(site_id):
-    site = Site.query.get_or_404(site_id)
-
-    site.address = request.form.get('address')
-    site.residence_type = request.form.get('residence_type')
-    site.room_size = request.form.get('room_size')
-    site.depositor = request.form.get('depositor')
-    site.customer_phone = request.form.get('customer_phone')
-
-    # 🔹 숫자로 변환하여 저장 (콤마 제거 후 정수 변환)
-    customer_price = request.form.get('customer_price', "0").replace(",", "")
-    contract_deposit = request.form.get('contract_deposit', "0").replace(",", "")
-
-    try:
-        site.customer_price = int(customer_price)  # 🔹 정수 변환
-    except ValueError:
-        site.customer_price = 0
-
-    try:
-        site.contract_deposit = int(contract_deposit)  # 🔹 정수 변환
-    except ValueError:
-        site.contract_deposit = 0
-
-    site.update_remaining_balance()
-    site.transaction_type = request.form.get('transaction_type')
-    site.modify_date = datetime.now()
-
-    db.session.commit()
-
-    return jsonify({
-        "success": True,
-        "address": site.address,
-        "residence_type": site.residence_type,
-        "room_size": site.room_size,
-        "depositor": site.depositor,
-        "customer_phone": site.customer_phone,
-        "customer_price": site.customer_price,  # ✅ 정수 값 반환
-        "contract_deposit": site.contract_deposit,  # ✅ 정수 값 반환
-        "remaining_balance": site.remaining_balance,  # ✅ 자동 계산된 값 반환
-        "transaction_type": site.transaction_type
-    })
 
 
 @bp.route('/edit_work/<string:work_id>', methods=['POST'])

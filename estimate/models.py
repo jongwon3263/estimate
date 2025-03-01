@@ -16,6 +16,8 @@ class Site(db.Model):
     __tablename__ = 'sites'
     #시공ID
     id = db.Column(db.Text(), primary_key=True)
+    #지역
+    district = db.Column(db.Text())
     #주소
     address = db.Column(db.Text())
     #주거 형태
@@ -40,6 +42,8 @@ class Site(db.Model):
     modify_date = db.Column(db.DateTime(), nullable=True)
     #거래 유형
     transaction_type = db.Column(db.Text())
+    #아카이브 여부
+    archive = db.Column(db.Integer, default=0)
     
     def __init__(self, **kwargs):
         """객체가 생성될 때 id 자동 생성"""
