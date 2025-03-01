@@ -33,11 +33,9 @@ def create_app():
     
     # Jinja 템플릿 필터 추가
     def format_currency(value):
-        try:
-            value = float(value)  # 🔹 숫자로 변환 (문자열도 처리 가능)
-            return f"₩{value:,.0f}"
-        except (ValueError, TypeError):
-            return "₩0"  # 변환할 수 없는 값이면 기본값 반환
+        if value is None:
+            return "₩0"
+        return f"₩{value:,.0f}"  # 천 단위 콤마 추가
     
     app.jinja_env.filters["format_currency"] = format_currency  # 필터 등록
     
