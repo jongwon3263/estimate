@@ -84,6 +84,7 @@ def detail(site_id):
 
         # 🔹 해당 시공(service_id)에 맞는 업체만 필터링
         available_companies = Company.query.filter_by(service_id=work.service_id).all()
+        form.set_choices(all_services, available_companies)
 
         # 🔹 기존 선택된 업체 유지
         form.service.choices = [(service.id, service.name) for service in Service.query.all()]
@@ -106,6 +107,21 @@ def detail(site_id):
 @bp.route('/create/', methods=('GET', 'POST'))
 def create():
     form = SiteForm()
+    
+    # 🔹 거래 유형 선택지 추가
+    form.transaction_type.choices = [
+        ('일반', '일반'),
+        ('세금계산서 발행', '세금계산서 발행'),
+        ('현금영수증 발행', '현금영수증 발행'),
+        ('카드결제', '카드결제')
+    ]
+    
+    # 🔹 service와 company의 choices 추가 (필수)
+    # all_services = Service.query.all()
+    # all_companies = Company.query.all()
+    # form.service.choices = [(service.id, service.name) for service in all_services]
+    # form.company.choices = [(company.id, company.name) for company in all_companies]
+    
     if request.method == 'POST' and form.validate_on_submit():
         site = Site(
             district=form.district.data,
@@ -115,6 +131,7 @@ def create():
             depositor=form.depositor.data,
             notes=form.notes.data,
             customer_phone=form.customer_phone.data,
+            transaction_type=form.transaction_type.data,  # ✅ 추가
             contract_date=datetime.now()
             )
         db.session.add(site)
@@ -192,37 +209,45 @@ def delete_work(work_id):
         db.session.rollback()
         return jsonify({"success": False, "error": str(e)}), 500
 
-@bp.route('/work_add/<string:site_id>', methods=['GET', 'POST'])
-def add_work(site_id):
-    site = Site.query.get_or_404(site_id)
-    form = WorkAddForm()
 
-    # 서비스 목록 가져오기
-    form.service.choices = [(service.id, service.name) for service in Service.query.all()]
-    # 업체 목록 가져오기
-    form.company.choices = [(company.id, company.name) for company in Company.query.all()]
+# @bp.route('/work_add/<string:site_id>', methods=['GET', 'POST'])
+# def add_work(site_id):
+#     site = Site.query.get_or_404(site_id)
+#     form = WorkAddForm()
 
-    if form.validate_on_submit():
-        new_work = Work(
-            site_id=site.id,
-            service_id=form.service.data,
-            company_id=form.company.data,
-            start_date=form.start_date.data,
-            end_date=form.end_date.data,
-            company_cost=form.company_cost.data,
-            customer_price=form.customer_price.data,
-            work_time=form.work_time.data,
-            details=form.details.data,
-            memo=form.memo.data,
-            status=form.status.data
-        )
-        db.session.add(new_work)
-        db.session.commit()
+#     # 서비스 목록 가져오기
+#     form.service.choices = [(service.id, service.name) for service in Service.query.all()]
+#     # 업체 목록 가져오기
+#     form.company.choices = [(company.id, company.name) for company in Company.query.all()]
 
-        flash('새 시공 정보가 추가되었습니다.', 'success')
-        return redirect(url_for('site.detail', site_id=site_id))
+#     if form.validate_on_submit():
+#         # start_date 값 가져오기
+#         start_date = form.start_date.data
 
-    return render_template('site/work_add.html', form=form, site=site)
+#         # end_date가 비어있으면 start_date와 동일하게 설정
+#         end_date = form.end_date.data if form.end_date.data else start_date  
+
+#         new_work = Work(
+#             site_id=site.id,
+#             service_id=form.service.data,
+#             company_id=form.company.data,
+#             start_date=start_date,
+#             end_date=end_date,  # 수정된 부분
+#             company_cost=form.company_cost.data,
+#             customer_price=form.customer_price.data,
+#             work_time=form.work_time.data,
+#             details=form.details.data,
+#             memo=form.memo.data,
+#             status=form.status.data
+#         )
+
+#         db.session.add(new_work)
+#         db.session.commit()
+
+#         flash('새 시공 정보가 추가되었습니다.', 'success')
+#         return redirect(url_for('site.detail', site_id=site_id))
+
+#     return render_template('site/site_detail.html', form=form, site=site)
 
 @bp.route('/get_companies/<string:service_id>', methods=['GET'])
 def get_companies(service_id):

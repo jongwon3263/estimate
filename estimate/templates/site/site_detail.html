@@ -138,6 +138,7 @@
         <div class="col-5">
             <div><span class="title">시공 추가</span></div>
             <form action="{{ url_for('work.add_work', site_id=site.id) }}" method="post" class="my-3">
+                
                 {{ work_add_form.hidden_tag() }}
                 
                 <!--

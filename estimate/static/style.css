@@ -60,6 +60,10 @@ h2 {
     padding-top: 20px;
 }
 
+.filter-group {
+    padding-bottom: 10px;
+}
+
 .search-group{
     margin-bottom: 20px;
     display: flex;
@@ -70,8 +74,6 @@ h2 {
 .search-group button {
     width: 100px; /* 버튼과 높이 맞추기 */
 }
-
-
 
 
 

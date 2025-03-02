@@ -10,6 +10,19 @@ class SiteForm(FlaskForm):
     depositor = TextAreaField('입금자명')
     customer_phone=TextAreaField('고객 연락처')
     notes = TextAreaField('메모')
+    customer_price = DecimalField('고객 판매가')  # ✅ 추가
+    contract_deposit = DecimalField('계약금')  # ✅ 추가
+    transaction_type = SelectField(
+        '거래 유형',
+        choices=[
+            ('일반', '일반'),
+            ('세금계산서 발행', '세금계산서 발행'),
+            ('현금영수증 발행', '현금영수증 발행'),
+            ('카드결제', '카드결제'),
+        ],
+        validators=[DataRequired()],
+        default="일반"
+    )
     
 class SiteEditForm(FlaskForm):
     district = StringField('지역')
@@ -46,7 +59,7 @@ class WorkAddForm(FlaskForm):
     start_date = DateField('시작 날짜', format='%Y-%m-%d')
     end_date = DateField('종료 날짜', format='%Y-%m-%d')
     company_cost = DecimalField('업체 비용', default=0, validators=[DataRequired(), NumberRange(min=0)])
-    customer_price = DecimalField('고객 가격', default=0, validators=[DataRequired(), NumberRange(min=0)])
+    customer_price = DecimalField('고객 가격')
     work_time = TextAreaField('작업 시간대')
     details = TextAreaField('상세 내용')
     memo = TextAreaField('메모')
