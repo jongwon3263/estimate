@@ -63,7 +63,7 @@
             <div id="work-info">
                 <div><span class="title">시공 정보</span></div>
                 <hr>
-                {% for work in site.work_set %}
+                {% for work in site.work_set|sort(attribute='start_date') %}
                     <!-- 기존 정보 표시 -->
                     <div id="work-display-{{ work.id }}">
                         <p>시공: <strong><span id="service-{{ work.id }}">{{ work.service.name }}</strong></span></p>
@@ -76,12 +76,14 @@
                         <p>진행 상황: <span id="status-{{ work.id }}"><strong>{{ work.status }}</strong></span></p>
                         <p>업체 도급가: <span id="company_cost-{{ work.id }}"><strong>{{ work.company_cost | format_currency }}</strong></span></p>
                         <button class="btn btn-primary work-edit-btn" data-work-id="{{ work.id }}">수정</button>
+                        <button class="btn btn-primary work-done-btn" data-work-id="{{ work.id }}">현장시공 완료</button>
+                        <button class="btn btn-primary generate-msg-btn" data-work-id="{{ work.id }}">메시지 생성</button>
                         <button class="btn btn-warning work-delete-btn" data-work-id="{{ work.id }}">삭제</button>
                     </div>
 
                     <!-- 수정 입력 폼 (처음엔 숨김) -->
                     <div id="edit-form-{{ work.id }}" style="display: none;">
-                        <form class="work-edit-form" method="POST" action="{{ url_for('site.edit_work', work_id=work.id) }}" data-work-id="{{ work.id }}">
+                        <form class="work-edit-form" method="POST" action="{{ url_for('work.edit_work', work_id=work.id) }}" data-work-id="{{ work.id }}">
                             {{ work_edit_forms[work.id].hidden_tag() }}
 
                             <label for="service-{{ work.id }}">시공</label>
@@ -129,6 +131,7 @@
                             <button type="button" class="btn btn-secondary cancel-btn" data-work-id="{{ work.id }}">취소</button>
                         </form>
                     </div>
+                    <br>
                 <hr>
                 {% endfor %}
             </div>
@@ -189,6 +192,7 @@
         </div>
     </div>    
 </div>
+
 <script>
     // 날짜 선택 제한 기능
     document.addEventListener("DOMContentLoaded", function() {
@@ -268,6 +272,36 @@
                     .catch(error => console.error("업체 목록 불러오기 오류:", error));
             }
         }
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        document.querySelectorAll(".work-done-btn").forEach(button => {
+            button.addEventListener("click", function() {
+                const workId = this.getAttribute("data-work-id");
+                const isConfirmed = confirm("이 시공을 '시공완료' 상태로 변경하시겠습니까?");
+                if (!isConfirmed) return;
+
+                fetch(`/work/done/${workId}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ status: "시공완료" })  // ✅ JSON 데이터 전송
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("시공 완료 상태로 변경되었습니다.");
+                        document.getElementById(`status-${workId}`).textContent = "시공완료";  // ✅ UI 업데이트
+                    } else {
+                        alert("변경 실패: " + data.error);
+                    }
+                })
+                .catch(error => console.error("❌ 오류 발생:", error));
+            });
+        });
     });
 </script>
 

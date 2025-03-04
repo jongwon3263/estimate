@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import render_template, Blueprint, url_for, flash
+from flask import render_template, Blueprint, url_for, flash, request, jsonify
 from werkzeug.utils import redirect
 
 from .. import db
@@ -52,4 +52,92 @@ def add_work(site_id):
         print("폼 검증 실패:", form.errors)  # <<<<<< 추가된 디버깅 코드
         flash("입력한 데이터가 올바르지 않습니다.", "danger")
 
-    return render_template('site/site_detail.html', form=form, site=site, work_add_form=form, site_form=SiteForm())
+    return render_template('site/site_detail.html', work_add_form=form, site=site, site_form=SiteForm())
+
+@bp.route('/edit_work/<string:work_id>', methods=['POST'])
+def edit_work(work_id):
+    work = Work.query.get_or_404(work_id)
+    site = work.site  
+
+    # 모든 서비스 및 업체 목록 불러오기
+    all_services = Service.query.all()
+    all_companies = Company.query.all()
+
+    # 🔹 시공 수정 폼을 생성하면서 choices 추가
+    form = WorkEditForm(obj=work)
+    form.service.choices = [(service.id, service.name) for service in all_services]
+    form.company.choices = [(company.id, company.name) for company in all_companies]
+
+    print("📌 요청된 데이터:", request.form)  # 🔍 요청 데이터 출력
+
+    if form.validate_on_submit():
+        print("✅ 폼 검증 성공")  # 🔍 폼이 유효할 때
+        work.service_id = form.service.data
+        work.company_id = form.company.data
+        work.start_date = form.start_date.data
+        work.end_date = form.end_date.data
+
+        # 🔹 `company_cost`를 정수(`int`)로 변환하여 저장
+        try:
+            work.company_cost = int(form.company_cost.data)  # 🔹 Decimal → int 변환
+        except (ValueError, TypeError):
+            work.company_cost = 0  # 변환 실패 시 기본값
+
+        work.work_time = form.work_time.data
+        work.details = form.details.data
+        work.memo = form.memo.data
+        work.status = form.status.data
+
+        db.session.commit()
+
+        # 🔹 AJAX 요청이면 JSON 응답 반환
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                "success": True,
+                "service": work.service.name,
+                "company": work.company.name if work.company else "미정",
+                "start_date": work.start_date.strftime("%Y-%m-%d"),
+                "end_date": work.end_date.strftime("%Y-%m-%d"),
+                "work_time": work.work_time,
+                "details": work.details,
+                "memo": work.memo,
+                "company_cost": work.company_cost  # ✅ 이제 정수로 저장됨
+            })
+
+        # 🔹 일반 폼 제출일 경우 기존 방식 유지
+        flash("시공 정보가 수정되었습니다!", "success")
+        return redirect(url_for('site.detail', site_id=work.site_id))
+
+    print("❌ 폼 검증 실패:", form.errors)  # 🔍 검증 실패 이유 출력
+
+    # 🔹 AJAX 요청이면 JSON으로 에러 반환
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({"success": False, "error": "입력값이 올바르지 않습니다."}), 400
+
+    flash("입력값이 올바르지 않습니다.", "danger")
+    return render_template(
+        'site/site_detail.html',
+        site=site,
+        work_edit_forms={work.id: form},
+        all_services=all_services
+    )
+
+@bp.route('/get_companies/<string:service_id>', methods=['GET'])
+def get_companies(service_id):
+    # service_id가 알파벳 문자열이므로 그대로 필터링
+    companies = Company.query.filter_by(service_id=service_id).all()
+
+    company_list = [{"id": company.id, "name": company.name} for company in companies]
+    
+    return jsonify(company_list)
+
+@bp.route("/done/<string:work_id>", methods=["POST"])
+def mark_work_done(work_id):
+    work = Work.query.get(work_id)
+    if not work:
+        return jsonify({"success": False, "error": "해당 시공 정보를 찾을 수 없습니다."}), 404
+
+    work.status = "시공완료"
+    db.session.commit()
+
+    return jsonify({"success": True, "status": work.status})

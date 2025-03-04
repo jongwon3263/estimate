@@ -75,6 +75,10 @@ h2 {
     width: 100px; /* 버튼과 높이 맞추기 */
 }
 
+.addWorkLabel{
+    padding-top: 20px;
+    font-size: 20px;
+}
 
 
 
@@ -82,7 +86,7 @@ h2 {
 
 
 .btn {
-    margin-right: 3vh;
+    margin-right: 0.5vh;
 }
 
 /* 컨테이너 스타일 */

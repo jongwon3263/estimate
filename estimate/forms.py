@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SelectField, DateField, IntegerField, SubmitField, DecimalField, BooleanField
+from wtforms import StringField, TextAreaField, SelectField, DateField, IntegerField, SubmitField, FloatField
 from wtforms.validators import DataRequired, NumberRange
 
 class SiteForm(FlaskForm):
@@ -10,8 +10,8 @@ class SiteForm(FlaskForm):
     depositor = TextAreaField('입금자명')
     customer_phone=TextAreaField('고객 연락처')
     notes = TextAreaField('메모')
-    customer_price = DecimalField('고객 판매가')  # ✅ 추가
-    contract_deposit = DecimalField('계약금')  # ✅ 추가
+    customer_price = FloatField('고객 판매가')  # ✅ 추가
+    contract_deposit = FloatField('계약금')  # ✅ 추가
     transaction_type = SelectField(
         '거래 유형',
         choices=[
@@ -32,7 +32,7 @@ class SiteEditForm(FlaskForm):
     depositor = StringField('입금자명')
     customer_phone = StringField('고객 연락처')
     notes = TextAreaField('메모')
-    customer_price = DecimalField('고객 판매가', default=0, places=0)
+    customer_price = FloatField('고객 판매가', default=0)
     contract_deposit = IntegerField('계약금', default=0)
     transaction_type = SelectField(
         '거래 유형',
@@ -56,16 +56,17 @@ class SiteEditForm(FlaskForm):
 class WorkAddForm(FlaskForm):
     service = SelectField('서비스', choices=[], coerce=str)
     company = SelectField('업체', choices=[],coerce=str)
-    start_date = DateField('시작 날짜', format='%Y-%m-%d')
-    end_date = DateField('종료 날짜', format='%Y-%m-%d')
-    company_cost = DecimalField('업체 비용', default=0, validators=[DataRequired(), NumberRange(min=0)])
-    customer_price = DecimalField('고객 가격')
+    start_date = DateField('시작 날짜', format='%Y-%m-%d', validators=[DataRequired()])
+    end_date = DateField('종료 날짜', format='%Y-%m-%d', validators=[DataRequired()])
+    company_cost = FloatField('업체 도급가', default=0)
+    customer_price = FloatField('고객 판매가')
     work_time = TextAreaField('작업 시간대')
     details = TextAreaField('상세 내용')
     memo = TextAreaField('메모')
     status = SelectField(
         '상태',
         choices=[
+            ('', '선택해주세요'),
             ('미배정', '미배정'),
             ('시공예정', '시공예정'),
             ('시공중', '시공중'),
@@ -84,10 +85,11 @@ class WorkEditForm(FlaskForm):
     work_time = StringField('작업 시간대')
     details = StringField('상세 사항')
     memo = StringField('메모')
-    company_cost = DecimalField('업체 도급가', default=0)
+    company_cost = FloatField('업체 도급가', default=0)
     status = SelectField(
         '상태',
         choices=[
+            ('', '선택해주세요'),
             ('미배정', '미배정'),
             ('시공예정', '시공예정'),
             ('시공중', '시공중'),

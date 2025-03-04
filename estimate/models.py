@@ -1,5 +1,6 @@
 from estimate import db
 from datetime import datetime
+from sqlalchemy.orm import validates 
 
 class Company(db.Model):
     __tablename__ = 'companies'  # 테이블 명시적 지정
@@ -105,7 +106,7 @@ class Work(db.Model):
     #종료 날짜
     end_date = db.Column(db.Date())
     #업체 도급가
-    company_cost = db.Column(db.Integer)
+    company_cost = db.Column(db.Integer, default=0)  # 최종 도급가
     #고객 판매가
     customer_price = db.Column(db.Integer)
     #진행상태
@@ -113,6 +114,7 @@ class Work(db.Model):
     #수정일자
     modify_date = db.Column(db.DateTime(), nullable=True)
 
+    
     def __init__(self, **kwargs):
         """id 자동 생성"""
         super().__init__(**kwargs)
