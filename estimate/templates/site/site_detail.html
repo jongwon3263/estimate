@@ -21,6 +21,7 @@
                     <li>거래 유형: {{ site.transaction_type }}</li>
                 </ul>
                 <button id="site-edit-btn" class="btn btn-primary">현장정보 수정</button>
+                <!--<button id="cash-receipt-btn" class="btn btn-primary">현금영수증 발급</button>-->
                 <button id="site-archive-btn" class="btn btn-warning">현장 삭제</button>
             </div>
             <!-- 현장정보 수정 입력 폼 (처음엔 숨겨져 있음) -->
@@ -45,10 +46,10 @@
 
                     <label for="customer_phone">고객 연락처</label>
                     {{ site_form.customer_phone(class="form-control", id="customer_phone") }}
-
+                    
                     <label for="customer_price">고객 판매가</label>
                     {{ site_form.customer_price(class="form-control", id="customer_price") }}
-
+                    
                     <label for="contract_deposit">계약금</label>
                     {{ site_form.contract_deposit(class="form-control", id="contract_deposit") }}
 
@@ -63,18 +64,22 @@
             <div id="work-info">
                 <div><span class="title">시공 정보</span></div>
                 <hr>
+                <!-- 시작 날짜 순으로 정렬 -->
                 {% for work in site.work_set|sort(attribute='start_date') %}
                     <!-- 기존 정보 표시 -->
                     <div id="work-display-{{ work.id }}">
-                        <p>시공: <strong><span id="service-{{ work.id }}">{{ work.service.name }}</strong></span></p>
-                        <p>업체: <strong><span id="company-{{ work.id }}">{{ work.company.name if work.company else '미정' }}</strong></span</p>
+                        <p>시공: <span id="service-{{ work.id }}"><strong>{{ work.service.name }}</strong></span></p>
+                        <p>업체: <span id="company-{{ work.id }}"><strong>{{ work.company.name if work.company else '미정' }}</strong></span</p>
                         <p>시작: <span id="start_date-{{ work.id }}"><strong>{{ work.start_date }}</strong></span></p>
                         <p>종료: <span id="end_date-{{ work.id }}"><strong>{{ work.end_date }}</strong></span></p>
                         <p>작업 시간대: <span id="work_time-{{ work.id }}"><strong>{{ work.work_time }}</strong></span></p>
                         <p>상세 사항: <span id="details-{{ work.id }}"><strong>{{ work.details }}</strong></span></p>
                         <p>메모: <span id="memo-{{ work.id }}"><strong>{{ work.memo }}</strong></span></p>
-                        <p>진행 상황: <span id="status-{{ work.id }}"><strong>{{ work.status }}</strong></span></p>
+                        <p>고객 판매가: <span id="customer_price-{{ work.id }}"><strong>{{ work.customer_price | format_currency }}</strong></span></p>
                         <p>업체 도급가: <span id="company_cost-{{ work.id }}"><strong>{{ work.company_cost | format_currency }}</strong></span></p>
+                        <p>금액 변동: <span id="additional_cost-{{ work.id }}"><strong>{{ work.additional_cost | default('') | format_currency }}</strong></span></p>
+                        <p>진행 상황: <span id="status-{{ work.id }}"><strong>{{ work.status }}</strong></span></p>
+                        
                         <button class="btn btn-primary work-edit-btn" data-work-id="{{ work.id }}">수정</button>
                         <button class="btn btn-primary work-done-btn" data-work-id="{{ work.id }}">현장시공 완료</button>
                         <button class="btn btn-primary generate-msg-btn" data-work-id="{{ work.id }}">메시지 생성</button>
@@ -121,8 +126,14 @@
                             <label for="memo-{{ work.id }}">메모</label>
                             {{ work_edit_forms[work.id].memo(class="form-control", id="memo-{{ work.id }}", value=work.memo) }}
 
+                            <label for="customer_price-{{ work.id }}">고객 판매가</label>
+                            {{ work_edit_forms[work.id].customer_price(class="form-control", id="customer_price-{{ work.id }}", value=work.customer_price) }}
+
                             <label for="company_cost-{{ work.id }}">업체 도급가</label>
                             {{ work_edit_forms[work.id].company_cost(class="form-control", id="company_cost-{{ work.id }}", value=work.company_cost) }}
+
+                            <label for="additional_cost-{{ work.id }}">금액 변동</label>
+                            {{ work_edit_forms[work.id].additional_cost(class="form-control", id="additional_cost-{{ work.id }}", value=work.additional_cost) }}
 
                             <label for="status-{{ work.id }}">진행 상황</label>
                             {{ work_edit_forms[work.id].status(class="form-control", id="status-{{ work.id }}", value=work.status) }}
@@ -167,13 +178,11 @@
                 <label for="end_date">{{ work_add_form.end_date.label }}</label>
                 {{ work_add_form.end_date(class="form-control") }}
 
-                <label for="company_cost">{{ work_add_form.company_cost.label }}</label>
-                {{ work_add_form.company_cost(class="form-control", value=work_add_form.company_cost.data or 0) }}
-
-                <!--
                 <label for="customer_price">{{ work_add_form.customer_price.label }}</label>
                 {{ work_add_form.customer_price(class="form-control", value=work_add_form.customer_price.data or 0) }}
-                -->
+
+                <label for="company_cost">{{ work_add_form.company_cost.label }}</label>
+                {{ work_add_form.company_cost(class="form-control", value=work_add_form.company_cost.data or 0) }}
 
                 <label for="work_time">{{ work_add_form.work_time.label }}</label>
                 {{ work_add_form.work_time(class="form-control") }}
@@ -412,6 +421,12 @@
                     if (data.success) {
                         alert("시공이 삭제되었습니다.");
                         document.getElementById(`work-display-${workId}`).remove(); // ✅ 삭제된 항목 제거
+
+                        // 0.1초 후 새로고침
+                        setTimeout(() => {
+                            document.body.style.display = "none";
+                            location.reload();
+                        }, 100);
                     } else {
                         alert("삭제 실패: " + data.error);
                     }
@@ -457,7 +472,7 @@
 
                 console.log("📡 요청 보내는 데이터:", Object.fromEntries(formData));
 
-                fetch(`/edit_work/${workId}`, {
+                fetch(`/work/edit_work/${workId}`, {
                     method: "POST",
                     body: formData,
                     headers: {

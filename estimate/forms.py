@@ -10,8 +10,8 @@ class SiteForm(FlaskForm):
     depositor = TextAreaField('입금자명')
     customer_phone=TextAreaField('고객 연락처')
     notes = TextAreaField('메모')
-    customer_price = FloatField('고객 판매가')  # ✅ 추가
-    contract_deposit = FloatField('계약금')  # ✅ 추가
+    # customer_price = FloatField('고객 판매가')
+    contract_deposit = FloatField('계약금')
     transaction_type = SelectField(
         '거래 유형',
         choices=[
@@ -85,7 +85,9 @@ class WorkEditForm(FlaskForm):
     work_time = StringField('작업 시간대')
     details = StringField('상세 사항')
     memo = StringField('메모')
+    customer_price = FloatField('고객 판매가')
     company_cost = FloatField('업체 도급가', default=0)
+    additional_cost = FloatField('금액 변동', default=0)
     status = SelectField(
         '상태',
         choices=[

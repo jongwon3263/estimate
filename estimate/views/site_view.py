@@ -16,6 +16,16 @@ def index():
     keyword = request.args.get("keyword", "").strip()
     today_works = request.args.get("today-works")
     tomorrow_works = request.args.get("tomorrow-works")
+    
+    sort_by = request.args.get("sort_by")
+    sort_order = request.args.get("sort_order", "asc")
+    
+    sort_options = {
+        "district": Site.district,
+        "address": Site.address,
+        "depositor": Site.depositor,
+        "contract-date": Site.contract_date
+    }
 
     query = Site.query.filter(Site.archive == 0)
 
@@ -23,23 +33,15 @@ def index():
     today = date.today()
     tomorrow = today + timedelta(days=1)
 
-    # 선택된 체크박스에 따라 필터링할 site_id 목록 가져오기
-    site_ids = set()
+    # 오늘 시공, 내일 시공 필터링
     if today_works:
-        today_sites = db.session.query(Work.site_id).filter(
-            Work.start_date <= today, Work.end_date >= today
-        ).distinct()
-        site_ids.update([site_id for site_id, in today_sites])
-
+        query = query.filter(
+            Site.works.any(Work.start_date <= today, Work.end_date >= today)
+        )
     if tomorrow_works:
-        tomorrow_sites = db.session.query(Work.site_id).filter(
-            Work.start_date <= tomorrow, Work.end_date >= tomorrow
-        ).distinct()
-        site_ids.update([site_id for site_id, in tomorrow_sites])
-
-    # site_id 필터 적용 (선택된 경우)
-    if site_ids:
-        query = query.filter(Site.id.in_(site_ids))
+        query = query.filter(
+            Site.works.any(Work.start_date <= tomorrow, Work.end_date >= tomorrow)
+        )
 
     # 검색어 필터 적용
     if keyword:
@@ -55,9 +57,19 @@ def index():
                 (Site.customer_phone.contains(keyword)) |
                 (Site.depositor.contains(keyword))
             )
-
-    # 최종 필터링된 목록 가져오기
-    site_list = query.order_by(Site.id.desc()).all()
+            
+    # 유효한 정렬 기준인지 확인
+    if sort_by in sort_options:
+        column = sort_options[sort_by]
+        if sort_order == "desc":
+            column = column.desc()
+        else:
+            column = column.asc()
+    else:
+        column = Site.contract_date.asc()  # 기본 정렬
+    
+    # 정렬된 데이터 가져오기 (필터링된 결과에 대해서만 정렬 적용)
+    site_list = query.order_by(column).all()
 
     return render_template('site/site_list.html', site_list=site_list)
 
@@ -197,18 +209,6 @@ def archive_site(site_id):
         db.session.rollback()
         return jsonify({"success": False, "error": str(e)}), 500
     
-@bp.route('/work/delete/<string:work_id>', methods=['POST'])
-def delete_work(work_id):
-    work = Work.query.get_or_404(work_id)
-
-    try:
-        db.session.delete(work)  # ✅ 시공 삭제
-        db.session.commit()
-        return jsonify({"success": True})
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"success": False, "error": str(e)}), 500
-
 
 @bp.route('/get_companies/<string:service_id>', methods=['GET'])
 def get_companies(service_id):

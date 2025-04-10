@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container my-3">
+    <a href="{{ url_for('site.create') }}" class="btn btn-primary" style="float: right;">현장 등록하기</a>
     <h2>현장</h2>
     <div class="col-6">
         <div id="filter-container">
@@ -26,21 +27,51 @@
                 <input class="service-filter" type="checkbox" id="filter-ET" name="filter-ET" value="yes">
                 <label for="filter-ET">기타</label>
             </div>
+            <select id="">
+                <option value="">전체 내용</option>
+                <option value="">주소</option>
+                <option value="">고객 연락처</option>
+                <option value="">입금자명</option>
+            </select>
             <br>
-            <div class="form-check form-switch filter-group">
-                <input class="form-check-input" type="checkbox" id="today-works" name="today-works" value="yes">
-                <label class="form-check-label" for="today-works">오늘 시공</label>
-            </div>
-            <div class="form-check form-switch filter-group" >
-                <input class="form-check-input" type="checkbox" id="tomorrow-works" name="tomorrow-works" value="yes">
-                <label class="form-check-label" for="tomorrow-works" >내일 시공</label>
-            </div>
-            <div id="date-filter" class="filter-group">
-                <label for="start-date-filter">시작:</label>
-                <input type="date" id="start-date-filter" min="2023-01-01" max="2099-06-20">
+            <div>
+                <div class="form-check form-switch filter-group">
+                    <input class="form-check-input" type="checkbox" id="today-works" name="today-works" value="yes">
+                    <label class="form-check-label" for="today-works">오늘 시공</label>
+                </div>
 
-                <label for="end-date-filter">마감:</label>
-                <input type="date" id="end-date-filter" min="2023-01-01" max="2099-06-20">
+                <div class="form-check form-switch filter-group" >
+                    <input class="form-check-input" type="checkbox" id="tomorrow-works" name="tomorrow-works" value="yes">
+                    <label class="form-check-label" for="tomorrow-works">내일 시공</label>
+                </div>
+
+                <div class="form-check form-switch filter-group" >
+                    <input class="form-check-input" type="checkbox" id="work-done" name="work-done" value="yes">
+                    <label class="form-check-label" for="work-done">시공 완료</label>
+                </div>
+
+                <div class="form-check form-switch filter-group" >
+                    <input class="form-check-input" type="checkbox" id="not-assigned" name="not-assigned" value="yes">
+                    <label class="form-check-label" for="not-assigned">미배정</label>
+                </div>
+
+                <div class="form-check form-switch filter-group" >
+                    <input class="form-check-input" type="checkbox" id="working" name="working" value="yes">
+                    <label class="form-check-label" for="working">시공중</label>
+                </div>
+
+                <div class="form-check form-switch filter-group" >
+                    <input class="form-check-input" type="checkbox" id="accident" name="accident" value="yes">
+                    <label class="form-check-label" for="accident">사건 발생</label>
+                </div>
+
+                <div id="date-filter" class="filter-group">
+                    <label for="start-date-filter">시작:</label>
+                    <input type="date" id="start-date-filter" min="2023-01-01" max="2099-06-20">
+
+                    <label for="end-date-filter">마감:</label>
+                    <input type="date" id="end-date-filter" min="2023-01-01" max="2099-06-20">
+                </div>
             </div>
         </div>
         <div class="search-group">
@@ -57,10 +88,10 @@
     <table class="table" style="width:70vw;">
         <thead>
             <tr class="table-primary">
-                <th><a href="">지역</a></th>
-                <th><a href="">주소</a></th>
-                <th><a href="">고객명</a></th>
-                <th><a href="">계약일</a></th>
+                <th><a href="#" id="sort-district" data-order="asc">지역</a></th>
+                <th><a href="#" id="sort-address" data-order="asc">주소</a></th>
+                <th><a href="#" id="sort-depositor" data-order="asc">고객명</a></th>
+                <th><a href="#" id="sort-contract-date" data-order="asc">계약일</a></th>
             </tr>
         </thead>
         <tbody>
@@ -89,16 +120,54 @@
             {% endif %}
         </tbody>
     </table>
-    <a href="{{ url_for('site.create') }}" class="btn btn-primary">현장 등록하기</a>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function updateFilter() {
+            const searchParams = new URLSearchParams(window.location.search);
+
+            // 모든 체크박스 가져오기
+            document.querySelectorAll(".service-filter").forEach(checkbox => {
+                if (checkbox.checked) {
+                    searchParams.set(checkbox.id, "yes");
+                } else {
+                    searchParams.delete(checkbox.id);
+                }
+            });
+
+            // URL 갱신 및 페이지 새로고침
+            window.location.href = "{{ url_for('site.index') }}" + "?" + searchParams.toString();
+        }
+
+        function restoreCheckboxState() {
+            const searchParams = new URLSearchParams(window.location.search);
+
+            // URL에서 필터 값 가져와서 체크박스 상태 복원
+            document.querySelectorAll(".service-filter").forEach(checkbox => {
+                if (searchParams.has(checkbox.id)) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+
+        // 페이지 로드 시 체크박스 상태 복원
+        restoreCheckboxState();
+
+        // 체크박스 변경 감지하여 필터 적용
+        document.querySelectorAll(".service-filter").forEach(checkbox => {
+            checkbox.addEventListener("change", updateFilter);
+        });
+    });
+</script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         function updateSearch() {
             const keyword = document.getElementById("search_kw").value.trim();
             const filter = document.getElementById("search_filter").value;
-            const todayWorks = document.getElementById("today-works").checked ? "yes" : "";
-            const tomorrowWorks = document.getElementById("tomorrow-works").checked ? "yes" : "";
+            const todayWorks = document.getElementById("today-works").checked;
+            const tomorrowWorks = document.getElementById("tomorrow-works").checked;
     
             const searchParams = new URLSearchParams(window.location.search); // 현재 URL 파라미터 가져오기
     
@@ -123,23 +192,16 @@
                 searchParams.delete("tomorrow-works");
             }
     
-            // 모든 필터가 해제되었을 경우 초기 상태로 돌아가기
-            if (!searchParams.has("today-works") && !searchParams.has("tomorrow-works") && !searchParams.has("keyword")) {
-                window.location.href = "{{ url_for('site.index') }}";
-            } else {
-                window.location.href = "{{ url_for('site.index') }}" + "?" + searchParams.toString();
-            }
+            // URL 업데이트
+            const newUrl = "{{ url_for('site.index') }}" + "?" + searchParams.toString();
+            window.location.replace(newUrl); // replace() 사용하여 새로고침 없이 URL 변경
         }
     
         // 현재 URL의 파라미터를 읽어 체크박스 상태 유지
         function restoreCheckboxState() {
             const searchParams = new URLSearchParams(window.location.search);
-            if (searchParams.has("today-works")) {
-                document.getElementById("today-works").checked = true;
-            }
-            if (searchParams.has("tomorrow-works")) {
-                document.getElementById("tomorrow-works").checked = true;
-            }
+            document.getElementById("today-works").checked = searchParams.has("today-works");
+            document.getElementById("tomorrow-works").checked = searchParams.has("tomorrow-works");
         }
     
         // 페이지 로드 시 체크박스 상태 복원
@@ -155,9 +217,77 @@
             updateSearch();
         });
     
-        // 체크박스 변경 시 즉시 필터링 (해제 시 전체 리스트 복원)
+        // 체크박스 변경 시 즉시 필터링
         document.getElementById("today-works").addEventListener("change", updateSearch);
         document.getElementById("tomorrow-works").addEventListener("change", updateSearch);
     });
-    </script>
+</script>
+
+<!-- <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const addressHeader = document.getElementById("sort-address");
+    
+        addressHeader.addEventListener("click", function (event) {
+            event.preventDefault(); // 기본 링크 동작 방지
+            
+            const searchParams = new URLSearchParams(window.location.search);
+            let currentOrder = searchParams.get("sort_order") || "asc";
+    
+            // 현재 상태를 확인하고 반대 정렬 방식 적용
+            let newOrder = (currentOrder === "asc") ? "desc" : "asc";
+            
+            searchParams.set("sort_by", "address");
+            searchParams.set("sort_order", newOrder);
+    
+            window.location.href = "{{ url_for('site.index') }}" + "?" + searchParams.toString();
+        });
+    
+        // 현재 정렬 상태를 URL에서 읽어 반영
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.get("sort_by") === "address") {
+            const order = searchParams.get("sort_order");
+            addressHeader.setAttribute("data-order", order);
+            addressHeader.innerHTML = `주소 ${order === "asc" ? "▲" : "▼"}`;
+        }
+    });
+</script>
+-->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function updateSorting(column) {
+            const searchParams = new URLSearchParams(window.location.search);
+            let currentOrder = searchParams.get("sort_order") || "asc";
+    
+            // 현재 정렬 상태 반대로 변경
+            let newOrder = (currentOrder === "asc") ? "desc" : "asc";
+    
+            searchParams.set("sort_by", column);
+            searchParams.set("sort_order", newOrder);
+    
+            window.location.href = "{{ url_for('site.index') }}" + "?" + searchParams.toString();
+        }
+    
+        // 정렬 가능한 헤더 목록
+        const sortableColumns = ["district", "address", "depositor", "contract-date"];
+    
+        sortableColumns.forEach(column => {
+            const element = document.getElementById("sort-" + column);
+            if (element) {
+                element.addEventListener("click", function (event) {
+                    event.preventDefault();
+                    updateSorting(column);
+                });
+    
+                // 현재 정렬 상태를 URL에서 읽어와서 반영
+                const searchParams = new URLSearchParams(window.location.search);
+                if (searchParams.get("sort_by") === column) {
+                    const order = searchParams.get("sort_order");
+                    element.setAttribute("data-order", order);
+                    element.innerHTML = `${element.innerHTML} ${order === "asc" ? "▲" : "▼"}`;
+                }
+            }
+        });
+    });
+</script>
 {% endblock %}

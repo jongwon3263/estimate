@@ -1,6 +1,7 @@
 from estimate import db
 from datetime import datetime
 from sqlalchemy.orm import validates 
+from sqlalchemy.ext.hybrid import hybrid_property
 
 class Company(db.Model):
     __tablename__ = 'companies'  # 테이블 명시적 지정
@@ -33,6 +34,8 @@ class Site(db.Model):
     customer_phone = db.Column(db.Text())
     #고객 판매가
     customer_price = db.Column(db.Integer, default=0)
+    works = db.relationship("Work", lazy="dynamic")
+    
     #계약금
     contract_deposit = db.Column(db.Integer, default=0)
     #잔금
@@ -46,6 +49,17 @@ class Site(db.Model):
     #아카이브 여부
     archive = db.Column(db.Integer, default=0)
     
+    # 시공 매출의 합으로 현장 매출 리턴
+    @hybrid_property
+    def total_customer_price(self):
+        return sum(work.customer_price or 0 for work in self.works.all())
+    
+    def update_customer_price(self):
+        self.customer_price = self.total_customer_price
+        self.update_remaining_balance()
+    
+
+    # 현장 id 자동 생성
     def __init__(self, **kwargs):
         """객체가 생성될 때 id 자동 생성"""
         super().__init__(**kwargs)  # 기본 필드 값 설정
@@ -106,9 +120,11 @@ class Work(db.Model):
     #종료 날짜
     end_date = db.Column(db.Date())
     #업체 도급가
-    company_cost = db.Column(db.Integer, default=0)  # 최종 도급가
+    company_cost = db.Column(db.Integer, default=0)
     #고객 판매가
-    customer_price = db.Column(db.Integer)
+    customer_price = db.Column(db.Integer, default=0)
+    #금액 변동
+    additional_cost = db.Column(db.Integer)
     #진행상태
     status = db.Column(db.Text())
     #수정일자

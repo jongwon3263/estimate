@@ -42,6 +42,9 @@ def add_work(site_id):
         )
 
         db.session.add(new_work)
+        
+        #현장 총액 업데이트
+        site.update_customer_price()
         db.session.commit()
 
         flash('새 시공 정보가 추가되었습니다.', 'success')
@@ -64,14 +67,14 @@ def edit_work(work_id):
     all_companies = Company.query.all()
 
     # 🔹 시공 수정 폼을 생성하면서 choices 추가
-    form = WorkEditForm(obj=work)
+    form = WorkEditForm(request.form, obj=work)
     form.service.choices = [(service.id, service.name) for service in all_services]
     form.company.choices = [(company.id, company.name) for company in all_companies]
 
     print("📌 요청된 데이터:", request.form)  # 🔍 요청 데이터 출력
 
     if form.validate_on_submit():
-        print("✅ 폼 검증 성공")  # 🔍 폼이 유효할 때
+        print("✅ 폼 검증 성공", form.data)  # 🔍 폼이 유효할 때
         work.service_id = form.service.data
         work.company_id = form.company.data
         work.start_date = form.start_date.data
@@ -82,12 +85,19 @@ def edit_work(work_id):
             work.company_cost = int(form.company_cost.data)  # 🔹 Decimal → int 변환
         except (ValueError, TypeError):
             work.company_cost = 0  # 변환 실패 시 기본값
+        
+        # customer_price
+        try:
+            work.customer_price = int(form.customer_price.data)
+        except (ValueError, TypeError):
+            work.customer_price = 0
 
         work.work_time = form.work_time.data
         work.details = form.details.data
         work.memo = form.memo.data
         work.status = form.status.data
 
+        work.site.update_customer_price()
         db.session.commit()
 
         # 🔹 AJAX 요청이면 JSON 응답 반환
@@ -121,6 +131,20 @@ def edit_work(work_id):
         work_edit_forms={work.id: form},
         all_services=all_services
     )
+    
+@bp.route('/delete/<string:work_id>', methods=['POST'])
+def delete_work(work_id):
+    work = Work.query.get_or_404(work_id)
+
+    try:
+        site = work.site  # 시공 삭제 후 현장 총액 업데이트를 위해 참조
+        db.session.delete(work)
+        site.update_customer_price()  # ✅ 삭제 후에도 총액 반영
+        db.session.commit()
+        return jsonify({"success": True})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @bp.route('/get_companies/<string:service_id>', methods=['GET'])
 def get_companies(service_id):
