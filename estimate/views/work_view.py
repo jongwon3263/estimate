@@ -1,11 +1,9 @@
-from datetime import datetime
-
 from flask import render_template, Blueprint, url_for, flash, request, jsonify
 from werkzeug.utils import redirect
 
 from .. import db
-from estimate.models import Site, Service, Company, Work
-from estimate.forms import SiteForm, SiteEditForm, WorkAddForm, WorkEditForm
+from estimate.models import Site, Service, Company, Work, Status
+from estimate.forms import SiteForm, WorkAddForm, WorkEditForm
 
 bp = Blueprint('work', __name__, url_prefix='/work')
 
@@ -17,6 +15,7 @@ def add_work(site_id):
     # 서비스, 업체 목록 설정
     form.service.choices = [(service.id, service.name) for service in Service.query.all()]
     form.company.choices = [(company.id, company.name) for company in Company.query.all()]
+    form.status.choices = [(status.id, status.name) for status in Status.query.all()]
 
     if form.validate_on_submit():
         start_date = form.start_date.data
@@ -38,7 +37,7 @@ def add_work(site_id):
             work_time=form.work_time.data,
             details=form.details.data,
             memo=form.memo.data,
-            status=form.status.data
+            status_id=form.status.data
         )
 
         db.session.add(new_work)
@@ -55,7 +54,7 @@ def add_work(site_id):
         print("폼 검증 실패:", form.errors)  # <<<<<< 추가된 디버깅 코드
         flash("입력한 데이터가 올바르지 않습니다.", "danger")
 
-    return render_template('site/site_detail.html', work_add_form=form, site=site, site_form=SiteForm())
+    return render_template('site/site_detail.html', work_add_form=form, site=site, site_form=SiteForm(), all_statuses=Status.query.all())
 
 @bp.route('/edit_work/<string:work_id>', methods=['POST'])
 def edit_work(work_id):
@@ -65,11 +64,12 @@ def edit_work(work_id):
     # 모든 서비스 및 업체 목록 불러오기
     all_services = Service.query.all()
     all_companies = Company.query.all()
-
+    all_statuses = Status.query.all()
     # 🔹 시공 수정 폼을 생성하면서 choices 추가
     form = WorkEditForm(request.form, obj=work)
     form.service.choices = [(service.id, service.name) for service in all_services]
     form.company.choices = [(company.id, company.name) for company in all_companies]
+    form.status.choices = [(status.id, status.name) for status in all_statuses]
 
     print("📌 요청된 데이터:", request.form)  # 🔍 요청 데이터 출력
 
@@ -95,7 +95,8 @@ def edit_work(work_id):
         work.work_time = form.work_time.data
         work.details = form.details.data
         work.memo = form.memo.data
-        work.status = form.status.data
+        work.additional_cost = form.additional_cost.data
+        work.status_id = form.status.data
 
         work.site.update_customer_price()
         db.session.commit()
@@ -129,7 +130,8 @@ def edit_work(work_id):
         'site/site_detail.html',
         site=site,
         work_edit_forms={work.id: form},
-        all_services=all_services
+        all_services=all_services,
+        all_statuses=all_statuses
     )
     
 @bp.route('/delete/<string:work_id>', methods=['POST'])
@@ -161,7 +163,9 @@ def mark_work_done(work_id):
     if not work:
         return jsonify({"success": False, "error": "해당 시공 정보를 찾을 수 없습니다."}), 404
 
-    work.status = "시공완료"
+    done_status = Status.query.filter_by(name="시공완료").first()
+    if done_status:
+        work.status_id = done_status.id
     db.session.commit()
 
-    return jsonify({"success": True, "status": work.status})
+    return jsonify({"success": True, "status": work.name})

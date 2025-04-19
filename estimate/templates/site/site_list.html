@@ -4,85 +4,69 @@
     <a href="{{ url_for('site.create') }}" class="btn btn-primary" style="float: right;">현장 등록하기</a>
     <h2>현장</h2>
     <div class="col-6">
-        <div id="filter-container">
-            <div>
-                <input class="service-filter" type="checkbox" id="filter-CL" name="filter-CL" value="yes">
-                <label for="filter-CL">청소</label>
-
-                <input class="service-filter" type="checkbox" id="filter-GR" name="filter-GR" value="yes">
-                <label for="filter-GR">줄눈</label>
-
-                <input class="service-filter" type="checkbox" id="filter-PT" name="filter-PT" value="yes">
-                <label for="filter-PT">탄성</label>
-
-                <input class="service-filter" type="checkbox" id="filter-CT" name="filter-CT" value="yes">
-                <label for="filter-CT">생활코팅</label>
-
-                <input class="service-filter" type="checkbox" id="filter-NH" name="filter-NH" value="yes">
-                <label for="filter-NH">새집증후군 솔루션</label>
-
-                <input class="service-filter" type="checkbox" id="filter-AP" name="filter-AP" value="yes">
-                <label for="filter-AP">가전분해청소</label>
-                
-                <input class="service-filter" type="checkbox" id="filter-ET" name="filter-ET" value="yes">
-                <label for="filter-ET">기타</label>
-            </div>
-            <select id="">
-                <option value="">전체 내용</option>
-                <option value="">주소</option>
-                <option value="">고객 연락처</option>
-                <option value="">입금자명</option>
-            </select>
-            <br>
-            <div>
-                <div class="form-check form-switch filter-group">
-                    <input class="form-check-input" type="checkbox" id="today-works" name="today-works" value="yes">
-                    <label class="form-check-label" for="today-works">오늘 시공</label>
-                </div>
-
-                <div class="form-check form-switch filter-group" >
-                    <input class="form-check-input" type="checkbox" id="tomorrow-works" name="tomorrow-works" value="yes">
-                    <label class="form-check-label" for="tomorrow-works">내일 시공</label>
-                </div>
-
-                <div class="form-check form-switch filter-group" >
-                    <input class="form-check-input" type="checkbox" id="work-done" name="work-done" value="yes">
-                    <label class="form-check-label" for="work-done">시공 완료</label>
-                </div>
-
-                <div class="form-check form-switch filter-group" >
-                    <input class="form-check-input" type="checkbox" id="not-assigned" name="not-assigned" value="yes">
-                    <label class="form-check-label" for="not-assigned">미배정</label>
-                </div>
-
-                <div class="form-check form-switch filter-group" >
-                    <input class="form-check-input" type="checkbox" id="working" name="working" value="yes">
-                    <label class="form-check-label" for="working">시공중</label>
-                </div>
-
-                <div class="form-check form-switch filter-group" >
-                    <input class="form-check-input" type="checkbox" id="accident" name="accident" value="yes">
-                    <label class="form-check-label" for="accident">사건 발생</label>
-                </div>
-
-                <div id="date-filter" class="filter-group">
-                    <label for="start-date-filter">시작:</label>
-                    <input type="date" id="start-date-filter" min="2023-01-01" max="2099-06-20">
-
-                    <label for="end-date-filter">마감:</label>
-                    <input type="date" id="end-date-filter" min="2023-01-01" max="2099-06-20">
-                </div>
-            </div>
-        </div>
-        <div class="search-group">
-            <select id="search_filter">
-                <option value="전체 내용">전체 내용</option>
-                <option value="주소">주소</option>
-                <option value="고객 연락처">고객 연락처</option>
-                <option value="입금자명">입금자명</option>
-            </select>
-            <input type="text" id="search_kw" class="form-control">
+        <!--키워드 검색-->
+        <div id="keyword-search" class="search-group">
+            <input type="text" id="search_kw" class="form-control" value="{{ request.args.get('search_kw', '') }}">
             <button class="btn btn-outline-primary" type="button" id="btn_search">찾기</button>
+        </div>
+        <div id="select-search" class="search-group">
+            <!--시공-->
+            <div class="mb-3">
+                <label for="service-filter" class="form-label">시공</label>
+                <select id="service-filter" class="form-select service-filter">
+                    <option value="">전체</option>
+                    {% for service in services %}
+                        <option value="{{ service.id }}"
+                            {% if service.id in request.args.getlist('services') %}selected{% endif %}>
+                            {{ service.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!--업체-->
+            <div class="mb-3">
+                <label for="company-filter" class="form-label">업체</label>
+                <select id="company-filter" class="form-select company-filter">
+                    <option value="">전체</option>
+                    {% for company in companies %}
+                        <option value="{{ company.id }}"
+                            {% if company.id|string == request.args.get('company') %}selected{% endif %}>
+                            {{ company.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!--상태-->
+            <div class="mb-3">
+                <label for="status-filter" class="form-label">상태</label>
+                <select id="status-filter" class="form-select status-filter">
+                    <option value="">전체</option>
+                    {% for status in statuses %}
+                        <option value="{{ status.id }}"
+                            {% if status.id|string in request.args.getlist('statuses') %}selected{% endif %}>
+                            {{ status.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <!--계약일-->
+            <div class="mb-3">
+                <label for="contract-date-filter" class="form-label">계약일</label>
+                <input type="date" id="contract-date-filter" min="2023-01-01" max="2099-06-20" class="form-control" value="{{ request.args.get('contract_date', '') }}">
+            </div>
+            <!--세금 처리-->
+            <div class="mb-3">
+                <label for="tax-filter" class="form-label">세금 처리</label>
+                <select id="tax-filter" class="form-select tax-filter">
+                    <option value="">전체</option>
+                    {% for tax in taxes %}
+                        <option value="{{ tax.id }}"
+                            {% if tax.id in request.args.getlist('taxes') %}selected{% endif %}>
+                            {{ tax.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
     </div>
     <table class="table" style="width:70vw;">
@@ -90,6 +74,7 @@
             <tr class="table-primary">
                 <th><a href="#" id="sort-district" data-order="asc">지역</a></th>
                 <th><a href="#" id="sort-address" data-order="asc">주소</a></th>
+                <th><a href="#" id="sort-start-date" data-order="asc">시공 날짜</a></th>
                 <th><a href="#" id="sort-depositor" data-order="asc">고객명</a></th>
                 <th><a href="#" id="sort-contract-date" data-order="asc">계약일</a></th>
             </tr>
@@ -103,6 +88,9 @@
                     </td>
                     <td>
                         <a href="{{ url_for('site.detail', site_id=site.id) }}">{{ site.address }}</a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('site.detail', site_id=site.id) }}">{{ site.works | map(attribute='start_date') | select | min }}</a>
                     </td>
                     <td>
                         <a href="{{ url_for('site.detail', site_id=site.id) }}">{{ site.depositor }}</a>
@@ -123,153 +111,97 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        function updateFilter() {
-            const searchParams = new URLSearchParams(window.location.search);
-
-            // 모든 체크박스 가져오기
-            document.querySelectorAll(".service-filter").forEach(checkbox => {
-                if (checkbox.checked) {
-                    searchParams.set(checkbox.id, "yes");
-                } else {
-                    searchParams.delete(checkbox.id);
-                }
-            });
-
-            // URL 갱신 및 페이지 새로고침
-            window.location.href = "{{ url_for('site.index') }}" + "?" + searchParams.toString();
-        }
-
-        function restoreCheckboxState() {
-            const searchParams = new URLSearchParams(window.location.search);
-
-            // URL에서 필터 값 가져와서 체크박스 상태 복원
-            document.querySelectorAll(".service-filter").forEach(checkbox => {
-                if (searchParams.has(checkbox.id)) {
-                    checkbox.checked = true;
-                }
-            });
-        }
-
-        // 페이지 로드 시 체크박스 상태 복원
-        restoreCheckboxState();
-
-        // 체크박스 변경 감지하여 필터 적용
-        document.querySelectorAll(".service-filter").forEach(checkbox => {
-            checkbox.addEventListener("change", updateFilter);
+    document.addEventListener('DOMContentLoaded', function() {
+        // 검색 버튼 요소를 가져옴
+        const searchBtn = document.getElementById('btn_search');
+    
+        // 🔹 (1) 필터 select 요소들 모두 가져와서 변경 시 필터 자동 적용
+        const allSelects = document.querySelectorAll('.form-select');
+        allSelects.forEach(select => {
+            select.addEventListener('change', applyFilters);
         });
+    
+        // 🔹 (2) 계약일(Date input)도 바뀌면 자동 필터 적용
+        document.getElementById('contract-date-filter').addEventListener('change', applyFilters);
+    
+        // 🔹 (3) 키워드 검색 input에서 '엔터' 키 눌렀을 때 검색 실행
+        document.getElementById('search_kw').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // 폼 제출 방지
+                searchBtn.click(); // 검색 버튼 클릭과 같은 효과
+            }
+        });
+    
+        // 🔹 (4) 검색 버튼을 클릭했을 때 필터 실행
+        searchBtn.addEventListener('click', applyFilters);
+    
+        // 🔹 (5) 실제 필터링 동작을 수행하는 함수
+        function applyFilters() {
+            // 필터 데이터를 수집
+            const filters = {
+                services: [],
+                search_kw: document.getElementById('search_kw').value.trim(),
+                company: document.getElementById('company-filter').value,
+                statuses: [],
+                contract_date: document.getElementById('contract-date-filter').value,
+                taxes: []
+            };
+    
+            // 선택된 시공 서비스 ID 추가
+            const selectedService = document.getElementById('service-filter').value;
+            if (selectedService) filters.services.push(selectedService);
+    
+            // 선택된 상태 ID 추가
+            const selectedStatus = document.getElementById('status-filter').value;
+            if (selectedStatus) filters.statuses.push(selectedStatus);
+    
+            // 선택된 세금 처리 ID 추가
+            const selectedTax = document.getElementById('tax-filter').value;
+            if (selectedTax) filters.taxes.push(selectedTax);
+    
+            // 🔹 URLSearchParams를 사용해서 파라미터 구성
+            const params = new URLSearchParams();
+    
+            // 키워드, 계약일, 업체 등 단일 필터 추가
+            if (filters.search_kw) params.append("search_kw", filters.search_kw);
+            if (filters.contract_date) params.append("contract_date", filters.contract_date);
+            if (filters.company) params.append("company", filters.company);
+    
+            // 다중 선택 가능한 항목들은 반복해서 추가
+            filters.services.forEach(id => params.append("services", id));
+            filters.statuses.forEach(id => params.append("statuses", id));
+            filters.taxes.forEach(id => params.append("taxes", id));
+    
+            // 🔹 현재 페이지를 필터링된 URL로 리디렉션
+            window.location.href = `/sites?${params.toString()}`;
+        }
     });
 </script>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        function updateSearch() {
-            const keyword = document.getElementById("search_kw").value.trim();
-            const filter = document.getElementById("search_filter").value;
-            const todayWorks = document.getElementById("today-works").checked;
-            const tomorrowWorks = document.getElementById("tomorrow-works").checked;
-    
-            const searchParams = new URLSearchParams(window.location.search); // 현재 URL 파라미터 가져오기
-    
-            // 기존 파라미터 유지
-            searchParams.set("filter", filter);
-            if (keyword) {
-                searchParams.set("keyword", keyword);
-            } else {
-                searchParams.delete("keyword");
-            }
-    
-            // 체크박스 상태 반영
-            if (todayWorks) {
-                searchParams.set("today-works", "yes");
-            } else {
-                searchParams.delete("today-works");
-            }
-    
-            if (tomorrowWorks) {
-                searchParams.set("tomorrow-works", "yes");
-            } else {
-                searchParams.delete("tomorrow-works");
-            }
-    
-            // URL 업데이트
-            const newUrl = "{{ url_for('site.index') }}" + "?" + searchParams.toString();
-            window.location.replace(newUrl); // replace() 사용하여 새로고침 없이 URL 변경
-        }
-    
-        // 현재 URL의 파라미터를 읽어 체크박스 상태 유지
-        function restoreCheckboxState() {
-            const searchParams = new URLSearchParams(window.location.search);
-            document.getElementById("today-works").checked = searchParams.has("today-works");
-            document.getElementById("tomorrow-works").checked = searchParams.has("tomorrow-works");
-        }
-    
-        // 페이지 로드 시 체크박스 상태 복원
-        restoreCheckboxState();
-    
-        // 검색 버튼 클릭 시 실행
-        document.getElementById("btn_search").addEventListener("click", function () {
-            const keyword = document.getElementById("search_kw").value.trim();
-            if (keyword.length === 0) {
-                alert("검색어를 입력하세요.");
-                return;
-            }
-            updateSearch();
-        });
-    
-        // 체크박스 변경 시 즉시 필터링
-        document.getElementById("today-works").addEventListener("change", updateSearch);
-        document.getElementById("tomorrow-works").addEventListener("change", updateSearch);
-    });
-</script>
-
-<!-- <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const addressHeader = document.getElementById("sort-address");
-    
-        addressHeader.addEventListener("click", function (event) {
-            event.preventDefault(); // 기본 링크 동작 방지
-            
-            const searchParams = new URLSearchParams(window.location.search);
-            let currentOrder = searchParams.get("sort_order") || "asc";
-    
-            // 현재 상태를 확인하고 반대 정렬 방식 적용
-            let newOrder = (currentOrder === "asc") ? "desc" : "asc";
-            
-            searchParams.set("sort_by", "address");
-            searchParams.set("sort_order", newOrder);
-    
-            window.location.href = "{{ url_for('site.index') }}" + "?" + searchParams.toString();
-        });
-    
-        // 현재 정렬 상태를 URL에서 읽어 반영
-        const searchParams = new URLSearchParams(window.location.search);
-        if (searchParams.get("sort_by") === "address") {
-            const order = searchParams.get("sort_order");
-            addressHeader.setAttribute("data-order", order);
-            addressHeader.innerHTML = `주소 ${order === "asc" ? "▲" : "▼"}`;
-        }
-    });
-</script>
--->
-
+<!--thead 클릭으로 정렬-->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         function updateSorting(column) {
-            const searchParams = new URLSearchParams(window.location.search);
-            let currentOrder = searchParams.get("sort_order") || "asc";
-    
-            // 현재 정렬 상태 반대로 변경
-            let newOrder = (currentOrder === "asc") ? "desc" : "asc";
-    
+            const searchParams = new URLSearchParams(window.location.search);  // 기존 필터 유지
+        
+            // 현재 정렬 상태 반대로
+            const currentSortBy = searchParams.get("sort_by");
+            const currentOrder = searchParams.get("sort_order") || "asc";
+        
+            let newOrder = "asc";
+            if (currentSortBy === column && currentOrder === "asc") {
+                newOrder = "desc";
+            }
+        
             searchParams.set("sort_by", column);
             searchParams.set("sort_order", newOrder);
-    
-            window.location.href = "{{ url_for('site.index') }}" + "?" + searchParams.toString();
+        
+            // 그대로 리디렉션
+            window.location.href = "{{ url_for('site.index') }}?" + searchParams.toString();
         }
     
         // 정렬 가능한 헤더 목록
-        const sortableColumns = ["district", "address", "depositor", "contract-date"];
+        const sortableColumns = ["district", "address", "start-date", "depositor", "contract-date"];
     
         sortableColumns.forEach(column => {
             const element = document.getElementById("sort-" + column);
@@ -290,4 +222,5 @@
         });
     });
 </script>
+
 {% endblock %}

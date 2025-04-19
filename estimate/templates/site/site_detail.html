@@ -18,7 +18,7 @@
                     <li>계약금: {{ site.contract_deposit | format_currency }}</li>
                     <li>잔금: {{ site.remaining_balance | format_currency }}</li>
                     <li>계약일: {{ site.contract_date }}</li>
-                    <li>거래 유형: {{ site.transaction_type }}</li>
+                    <li>세금 처리: {{ site.tax.name }}</li>
                 </ul>
                 <button id="site-edit-btn" class="btn btn-primary">현장정보 수정</button>
                 <!--<button id="cash-receipt-btn" class="btn btn-primary">현금영수증 발급</button>-->
@@ -53,8 +53,8 @@
                     <label for="contract_deposit">계약금</label>
                     {{ site_form.contract_deposit(class="form-control", id="contract_deposit") }}
 
-                    <label for="transaction_type">거래 유형</label>
-                    {{ site_form.transaction_type(class="form-control", id="transaction_type") }}
+                    <label for="tax_treatment">세금 처리</label>
+                    {{ site_form.tax_treatment(class="form-control", id="tax_treatment") }}
 
                     <button type="submit" class="btn btn-success mt-3">저장</button>
                     <button type="button" id="cancel-btn" class="btn btn-secondary mt-3">취소</button>
@@ -65,7 +65,7 @@
                 <div><span class="title">시공 정보</span></div>
                 <hr>
                 <!-- 시작 날짜 순으로 정렬 -->
-                {% for work in site.work_set|sort(attribute='start_date') %}
+                {% for work in site.works|sort(attribute='start_date') %}
                     <!-- 기존 정보 표시 -->
                     <div id="work-display-{{ work.id }}">
                         <p>시공: <span id="service-{{ work.id }}"><strong>{{ work.service.name }}</strong></span></p>
@@ -74,11 +74,11 @@
                         <p>종료: <span id="end_date-{{ work.id }}"><strong>{{ work.end_date }}</strong></span></p>
                         <p>작업 시간대: <span id="work_time-{{ work.id }}"><strong>{{ work.work_time }}</strong></span></p>
                         <p>상세 사항: <span id="details-{{ work.id }}"><strong>{{ work.details }}</strong></span></p>
-                        <p>메모: <span id="memo-{{ work.id }}"><strong>{{ work.memo }}</strong></span></p>
                         <p>고객 판매가: <span id="customer_price-{{ work.id }}"><strong>{{ work.customer_price | format_currency }}</strong></span></p>
                         <p>업체 도급가: <span id="company_cost-{{ work.id }}"><strong>{{ work.company_cost | format_currency }}</strong></span></p>
                         <p>금액 변동: <span id="additional_cost-{{ work.id }}"><strong>{{ work.additional_cost | default('') | format_currency }}</strong></span></p>
-                        <p>진행 상황: <span id="status-{{ work.id }}"><strong>{{ work.status }}</strong></span></p>
+                        <p>메모: <span id="memo-{{ work.id }}"><strong>{{ work.memo }}</strong></span></p>
+                        <p>진행 상황: <span id="status-{{ work.id }}"><strong>{{ work.status.name }}</strong></span></p>
                         
                         <button class="btn btn-primary work-edit-btn" data-work-id="{{ work.id }}">수정</button>
                         <button class="btn btn-primary work-done-btn" data-work-id="{{ work.id }}">현장시공 완료</button>
@@ -123,9 +123,6 @@
                             <label for="details-{{ work.id }}">상세 사항</label>
                             {{ work_edit_forms[work.id].details(class="form-control", id="details-{{ work.id }}", value=work.details) }}
 
-                            <label for="memo-{{ work.id }}">메모</label>
-                            {{ work_edit_forms[work.id].memo(class="form-control", id="memo-{{ work.id }}", value=work.memo) }}
-
                             <label for="customer_price-{{ work.id }}">고객 판매가</label>
                             {{ work_edit_forms[work.id].customer_price(class="form-control", id="customer_price-{{ work.id }}", value=work.customer_price) }}
 
@@ -134,6 +131,9 @@
 
                             <label for="additional_cost-{{ work.id }}">금액 변동</label>
                             {{ work_edit_forms[work.id].additional_cost(class="form-control", id="additional_cost-{{ work.id }}", value=work.additional_cost) }}
+
+                            <label for="memo-{{ work.id }}">메모</label>
+                            {{ work_edit_forms[work.id].memo(class="form-control", id="memo-{{ work.id }}", value=work.memo) }}
 
                             <label for="status-{{ work.id }}">진행 상황</label>
                             {{ work_edit_forms[work.id].status(class="form-control", id="status-{{ work.id }}", value=work.status) }}
@@ -150,6 +150,10 @@
         <div class="col">
         </div>
         <div class="col-5">
+            <div style="display: inline;"><span class="title">팀장 전달 메시지</span></div>
+            <button id="copyOnClipboard" class="btn btn-success">현재 내용 복사</button>
+            <button id="clearTextarea" class="btn btn-secondary">clear</button>
+            <textarea id="messageForWorker" class="my-3 form-control" style="height: 175px;"></textarea>
             <div><span class="title">시공 추가</span></div>
             <form action="{{ url_for('work.add_work', site_id=site.id) }}" method="post" class="my-3">
                 
@@ -192,15 +196,86 @@
 
                 <label for="memo">{{ work_add_form.memo.label }}</label>
                 {{ work_add_form.memo(class="form-control") }}
-
+                <!--
                 <label for="status">{{ work_add_form.status.label }}</label>
                 {{ work_add_form.status(class="form-control") }}
+                -->
+
+                <label for="status">{{ work_add_form.status.label }}</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="" selected disabled></option>
+                    {% for status in all_statuses %}
+                        <option value="{{ status.id }}">{{ status.name }}</option>
+                    {% endfor %}
+                </select>
 
                 <button type="submit" class="btn btn-primary mt-3">등록</button>
             </form>
+
         </div>
     </div>    
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const generateMessageBtn = document.getElementById("generateMessageBtn");
+        const messageTextarea = document.getElementById("messageForWorker");
+        const copyButton = document.getElementById("copyOnClipboard");
+        const clearButton = document.getElementById("clearTextarea");
+
+        const address = "{{ site.address }}";
+        const customer_phone = "{{ site.customer_phone }}";
+        const depositor = "{{ site.depositor }}";
+
+        const works = {{ work_json | tojson | safe }};
+        const remainingBalance = {{ remaining_balance | tojson }};
+
+        // ✅ 여기부터 새로운 메시지 생성 로직
+        document.querySelectorAll(".generate-msg-btn").forEach(button => {
+            button.addEventListener("click", function () {
+                const workId = this.getAttribute("data-work-id");
+                const work = works.find(w => w.id === workId);
+                if (!work) return;
+
+                const startDate = work.start_date;
+                const companyCost = work.company_cost;
+
+                let message = `[${startDate}] 실수령 ₩${companyCost.toLocaleString()}원\n`;
+
+                if (companyCost === remainingBalance) {
+                    message += `>고객 잔금 ₩${remainingBalance.toLocaleString()}원 수령해 주시고 마무리해 주시면 감사하겠습니다.`;
+                } else if (companyCost > remainingBalance) {
+                    message += `>고객 잔금 ₩${remainingBalance.toLocaleString()}원 수령해 주시고 마무리해 주시면 차액 송금드리겠습니다.`;
+                } else {
+                    message += `>고객 잔금 ₩${remainingBalance.toLocaleString()}원 수령해 주시고 마무리 후 차액 송금해 주시면 감사하겠습니다.`;
+                }
+
+                message += `\n\n${address}\n${customer_phone}(${depositor} 고객님)`;
+
+                messageTextarea.value = message;
+                window.scrollTo({ top: 0});
+            });
+        });
+
+        copyButton.addEventListener("click", function() {
+            const text = document.getElementById("messageForWorker").value;
+        
+            navigator.clipboard.writeText(text).then(() => {
+                alert("복사되었습니다!");
+            }).catch(err => {
+                alert("복사에 실패했습니다. 브라우저 권한을 확인해주세요.");
+            });
+        });
+
+        clearButton.addEventListener("click", function () {
+            const confirmed = confirm("정말로 내용을 지우겠습니까?");
+            if (confirmed) {
+                const messageTextarea = document.getElementById("messageForWorker");
+                messageTextarea.value = "";
+            }
+        });
+    });
+</script>
 
 <script>
     // 날짜 선택 제한 기능
@@ -268,7 +343,7 @@
             companyDropdown.innerHTML = '<option value="">업체 선택</option>';
     
             if (serviceId) {
-                fetch(`/get_companies/${serviceId}`)
+                fetch(`/sites/get_companies/${serviceId}`)
                     .then(response => response.json())
                     .then(data => {
                         data.forEach(company => {
@@ -437,6 +512,11 @@
     });
 </script>
 
+<script>
+    // 🛠️ works 정의 - 이게 없으면 generate-msg-btn 작동 안 함
+    const works = {{ work_json | tojson | safe }};
+    console.log("✅ works 데이터 확인:", works);
+</script>
 
 <script>
     // 시공 수정

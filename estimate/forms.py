@@ -12,17 +12,7 @@ class SiteForm(FlaskForm):
     notes = TextAreaField('메모')
     # customer_price = FloatField('고객 판매가')
     contract_deposit = FloatField('계약금')
-    transaction_type = SelectField(
-        '거래 유형',
-        choices=[
-            ('일반', '일반'),
-            ('세금계산서 발행', '세금계산서 발행'),
-            ('현금영수증 발행', '현금영수증 발행'),
-            ('카드결제', '카드결제'),
-        ],
-        validators=[DataRequired()],
-        default="일반"
-    )
+    tax_treatment = SelectField('세금 처리',choices=[],validators=[DataRequired()], default="일반")
     
 class SiteEditForm(FlaskForm):
     district = StringField('지역')
@@ -34,16 +24,7 @@ class SiteEditForm(FlaskForm):
     notes = TextAreaField('메모')
     customer_price = FloatField('고객 판매가', default=0)
     contract_deposit = IntegerField('계약금', default=0)
-    transaction_type = SelectField(
-        '거래 유형',
-        choices=[
-            ('일반', '일반'),
-            ('세금계산서 발행', '세금계산서 발행'),
-            ('현금영수증 발행', '현금영수증 발행'),
-            ('카드결제', '카드결제'),
-        ],
-        validators=[DataRequired()], default="일반"
-    )
+    tax_treatment = SelectField('세금 처리',choices=[], coerce=str)
     archive = IntegerField('아카이브')
     
     def process_formdata(self, valuelist):
@@ -59,22 +40,11 @@ class WorkAddForm(FlaskForm):
     start_date = DateField('시작 날짜', format='%Y-%m-%d', validators=[DataRequired()])
     end_date = DateField('종료 날짜', format='%Y-%m-%d', validators=[DataRequired()])
     company_cost = FloatField('업체 도급가', default=0)
-    customer_price = FloatField('고객 판매가')
+    customer_price = FloatField('고객 판매가', default=0)
     work_time = TextAreaField('작업 시간대')
     details = TextAreaField('상세 내용')
     memo = TextAreaField('메모')
-    status = SelectField(
-        '상태',
-        choices=[
-            ('', '선택해주세요'),
-            ('미배정', '미배정'),
-            ('시공예정', '시공예정'),
-            ('시공중', '시공중'),
-            ('시공완료', '시공완료'),
-            ('사건발생', '사건발생'),
-        ],
-        validators=[DataRequired()]
-    )
+    status = SelectField('상태',choices=[], validators=[DataRequired()], coerce=int)
     submit = SubmitField('등록')
 
 class WorkEditForm(FlaskForm):
@@ -85,24 +55,14 @@ class WorkEditForm(FlaskForm):
     work_time = StringField('작업 시간대')
     details = StringField('상세 사항')
     memo = StringField('메모')
-    customer_price = FloatField('고객 판매가')
+    customer_price = FloatField('고객 판매가', default=0)
     company_cost = FloatField('업체 도급가', default=0)
     additional_cost = FloatField('금액 변동', default=0)
-    status = SelectField(
-        '상태',
-        choices=[
-            ('', '선택해주세요'),
-            ('미배정', '미배정'),
-            ('시공예정', '시공예정'),
-            ('시공중', '시공중'),
-            ('시공완료', '시공완료'),
-            ('사건발생', '사건발생'),
-        ],
-        validators=[DataRequired()]
-    )
+    status = SelectField('상태', choices=[], coerce=int)
 
-    def set_choices(self, services, companies):
+    def set_choices(self, services, companies, statuses):
         """ 드롭다운 목록을 설정하는 함수 """
         self.service.choices = [(service.id, service.name) for service in services]
         self.company.choices = [(company.id, company.name) for company in companies]
+        self.status.choices = [(status.id, status.name) for status in statuses]
     

@@ -1,77 +1,96 @@
 from datetime import date, datetime, timedelta
+from sqlalchemy import or_
+from sqlalchemy.orm import aliased
 
 from flask import render_template, Blueprint, request, url_for, jsonify, flash
 from werkzeug.utils import redirect
 
 from .. import db
-from estimate.models import Site, Service, Company, Work
+from estimate.models import Site, Service, Company, Work, Status, Tax
 from estimate.forms import SiteForm, SiteEditForm, WorkAddForm, WorkEditForm
 
 
-bp = Blueprint('site', __name__, url_prefix='/')
+bp = Blueprint('site', __name__, url_prefix='/sites')
 
 @bp.route('/')
 def index():
-    filter_option = request.args.get("filter", "전체 내용")
-    keyword = request.args.get("keyword", "").strip()
-    today_works = request.args.get("today-works")
-    tomorrow_works = request.args.get("tomorrow-works")
-    
-    sort_by = request.args.get("sort_by")
-    sort_order = request.args.get("sort_order", "asc")
-    
-    sort_options = {
-        "district": Site.district,
-        "address": Site.address,
-        "depositor": Site.depositor,
-        "contract-date": Site.contract_date
+    keyword = request.args.get('search_kw', '').strip()
+    service_ids = request.args.getlist('services')
+    company_id = request.args.get('company')
+    status_ids = request.args.getlist('statuses')
+    contract_date = request.args.get('contract_date')
+    tax_ids = request.args.getlist('taxes')
+    sort_by = request.args.get('sort_by', 'contract-date')
+    sort_order = request.args.get('sort_order', 'asc')
+
+    # 관계 모델 alias
+    company_alias = aliased(Company)
+    work_alias = aliased(Work)
+
+    site_query = Site.query
+
+    # 🔍 키워드 검색
+    # 키워드가 있으면 먼저 join (기본적으로 work_alias 사용)
+    if keyword:
+        site_query = site_query\
+            .join(work_alias, work_alias.site_id == Site.id)\
+            .join(company_alias, company_alias.id == work_alias.company_id)\
+            .filter(or_(
+                Site.address.ilike(f"%{keyword}%"),
+                Site.depositor.ilike(f"%{keyword}%"),
+                company_alias.name.ilike(f"%{keyword}%"),
+                work_alias.details.ilike(f"%{keyword}%"),
+                work_alias.memo.ilike(f"%{keyword}%")
+            ))
+    else:
+        # 키워드가 없으면 필요한 조건만 조건별로 join
+        if service_ids or company_id or status_ids:
+            site_query = site_query.join(work_alias, work_alias.site_id == Site.id)
+
+    # 🔎 서비스 필터
+    if service_ids:
+        site_query = site_query.filter(work_alias.service_id.in_(service_ids))
+
+    # 🔎 업체 필터
+    if company_id:
+        site_query = site_query.filter(work_alias.company_id == company_id)
+
+    # 🔎 상태 필터
+    if status_ids:
+        site_query = site_query.filter(work_alias.status_id.in_(status_ids))
+
+    # 🔎 계약일 필터
+    if contract_date:
+        site_query = site_query.filter(Site.contract_date == contract_date)
+
+    # 🔎 세금 처리 필터
+    if tax_ids:
+        site_query = site_query.filter(Site.tax_id.in_(tax_ids))
+
+    # 🔁 정렬
+    sort_column_map = {
+        'district': Site.district,
+        'address': Site.address,
+        'contract-date': Site.contract_date,
+        'depositor': Site.depositor,
+        'start-date': Work.start_date  # 실제 정렬 기준이 필요하다면 join 추가
     }
 
-    query = Site.query.filter(Site.archive == 0)
+    sort_column = sort_column_map.get(sort_by, Site.contract_date)
+    if sort_order == 'desc':
+        sort_column = sort_column.desc()
+    site_query = site_query.order_by(sort_column)
 
-    # 오늘, 내일 날짜 설정
-    today = date.today()
-    tomorrow = today + timedelta(days=1)
+    # 🔚 중복 제거 + 쿼리 실행
+    site_list = site_query.distinct().all()
 
-    # 오늘 시공, 내일 시공 필터링
-    if today_works:
-        query = query.filter(
-            Site.works.any(Work.start_date <= today, Work.end_date >= today)
-        )
-    if tomorrow_works:
-        query = query.filter(
-            Site.works.any(Work.start_date <= tomorrow, Work.end_date >= tomorrow)
-        )
-
-    # 검색어 필터 적용
-    if keyword:
-        if filter_option == "주소":
-            query = query.filter(Site.address.contains(keyword))
-        elif filter_option == "고객 연락처":
-            query = query.filter(Site.customer_phone.contains(keyword))
-        elif filter_option == "입금자명":
-            query = query.filter(Site.depositor.contains(keyword))
-        else:
-            query = query.filter(
-                (Site.address.contains(keyword)) |
-                (Site.customer_phone.contains(keyword)) |
-                (Site.depositor.contains(keyword))
-            )
-            
-    # 유효한 정렬 기준인지 확인
-    if sort_by in sort_options:
-        column = sort_options[sort_by]
-        if sort_order == "desc":
-            column = column.desc()
-        else:
-            column = column.asc()
-    else:
-        column = Site.contract_date.asc()  # 기본 정렬
-    
-    # 정렬된 데이터 가져오기 (필터링된 결과에 대해서만 정렬 적용)
-    site_list = query.order_by(column).all()
-
-    return render_template('site/site_list.html', site_list=site_list)
+    return render_template('site/site_list.html',
+        site_list=site_list,
+        services=Service.query.all(),
+        companies=Company.query.all(),
+        statuses=Status.query.all(),
+        taxes=Tax.query.all()
+    )
 
 @bp.route('/site_detail/<string:site_id>/', methods=['GET'])
 def detail(site_id):
@@ -82,6 +101,7 @@ def detail(site_id):
 
     # 모든 서비스 목록 불러오기
     all_services = Service.query.all()
+    all_statuses = Status.query.all()
 
     # 시공 추가 폼
     work_add_form = WorkAddForm()
@@ -90,21 +110,38 @@ def detail(site_id):
     # 시공 수정 폼 (각 work 객체별로 개별 폼 생성)
     work_edit_forms = {}  # 폼 객체만 저장
     selected_company_names = {}  # 기존 선택된 업체 이름 저장
+    
+    # 세금처리 드롭다운 세팅
+    tax_list = Tax.query.all()
+    site_form.tax_treatment.choices = [(tax.id, tax.name) for tax in tax_list]
+    site_form.tax_treatment.data = site.tax_id  # 선택된 항목 표시용
 
-    for work in site.work_set:
+    work_json =[]
+    
+    for work in site.works:
         form = WorkEditForm(obj=work)
 
         # 🔹 해당 시공(service_id)에 맞는 업체만 필터링
         available_companies = Company.query.filter_by(service_id=work.service_id).all()
-        form.set_choices(all_services, available_companies)
+        form.set_choices(all_services, available_companies, all_statuses)
 
         # 🔹 기존 선택된 업체 유지
         form.service.choices = [(service.id, service.name) for service in Service.query.all()]
         form.company.choices = [(int(company.id), company.name) for company in available_companies]  # ✅ 미리 int 변환
-
+        form.status.choices = [(status.id, status.name) for status in Status.query.all()]
+        
         work.company_id = int(work.company_id) if work.company_id else None  # ✅ 미리 int 변환
 
         work_edit_forms[work.id] = form  # ✅ 수정된 폼 저장
+        
+        work_json.append({
+        'id': work.id,
+        'start_date': work.start_date.strftime('%-m/%-d') if work.start_date else "",
+        'company_cost': work.company_cost or 0,
+        'address': site.address,
+        'customer_phone': site.customer_phone,
+        'depositor': site.depositor
+        })
 
     return render_template(
         'site/site_detail.html',
@@ -113,26 +150,18 @@ def detail(site_id):
         work_add_form=work_add_form,
         work_edit_forms=work_edit_forms,
         selected_company_names=selected_company_names,
-        all_services=all_services
+        all_services=all_services,
+        work_json=work_json,
+        remaining_balance=site.remaining_balance,
+        address = site.address,
+        customer_phone = site.customer_phone,
+        depositor = site.depositor,
+        all_statuses=Status.query.all()
     )
 
 @bp.route('/create/', methods=('GET', 'POST'))
 def create():
     form = SiteForm()
-    
-    # 🔹 거래 유형 선택지 추가
-    form.transaction_type.choices = [
-        ('일반', '일반'),
-        ('세금계산서 발행', '세금계산서 발행'),
-        ('현금영수증 발행', '현금영수증 발행'),
-        ('카드결제', '카드결제')
-    ]
-    
-    # 🔹 service와 company의 choices 추가 (필수)
-    # all_services = Service.query.all()
-    # all_companies = Company.query.all()
-    # form.service.choices = [(service.id, service.name) for service in all_services]
-    # form.company.choices = [(company.id, company.name) for company in all_companies]
     
     if request.method == 'POST' and form.validate_on_submit():
         site = Site(
@@ -143,7 +172,7 @@ def create():
             depositor=form.depositor.data,
             notes=form.notes.data,
             customer_phone=form.customer_phone.data,
-            transaction_type=form.transaction_type.data,  # ✅ 추가
+            tax_treatment=form.tax_treatment.data,  # ✅ 추가
             contract_date=datetime.now()
             )
         db.session.add(site)
@@ -177,7 +206,8 @@ def modify_site(site_id):
         site.contract_deposit = 0
 
     site.update_remaining_balance()
-    site.transaction_type = request.form.get('transaction_type')
+    print("🔍 세금 처리 ID:", request.form.get('tax_treatment'))
+    site.tax_id = request.form.get('tax_treatment')
     site.modify_date = datetime.now()
 
     db.session.commit()
@@ -193,7 +223,7 @@ def modify_site(site_id):
         "customer_price": site.customer_price,  # ✅ 정수 값 반환
         "contract_deposit": site.contract_deposit,  # ✅ 정수 값 반환
         "remaining_balance": site.remaining_balance,  # ✅ 자동 계산된 값 반환
-        "transaction_type": site.transaction_type
+        "tax_treatment": site.tax.name if site.tax else ""
     })
 
     

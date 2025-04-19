@@ -10,9 +10,11 @@ class Company(db.Model):
     #업체명
     name = db.Column(db.String(100))
     #시공품목
-    service_id = db.Column(db.Text())
+    service_id = db.Column(db.Text, db.ForeignKey('services.id'))
+    service = db.relationship('Service', backref='companies')
     #연락처
     phone = db.Column(db.Text())
+    works = db.relationship("Work", back_populates="company")
     
 class Site(db.Model):
     __tablename__ = 'sites'
@@ -34,7 +36,7 @@ class Site(db.Model):
     customer_phone = db.Column(db.Text())
     #고객 판매가
     customer_price = db.Column(db.Integer, default=0)
-    works = db.relationship("Work", lazy="dynamic")
+    works = db.relationship("Work", back_populates="site", lazy="dynamic")
     
     #계약금
     contract_deposit = db.Column(db.Integer, default=0)
@@ -44,15 +46,18 @@ class Site(db.Model):
     contract_date = db.Column(db.Date())
     #수정일자
     modify_date = db.Column(db.DateTime(), nullable=True)
-    #거래 유형
-    transaction_type = db.Column(db.Text())
     #아카이브 여부
     archive = db.Column(db.Integer, default=0)
+    
+    tax_id = db.Column(db.Text(), db.ForeignKey('taxes.id'))
+    tax = db.relationship('Tax', back_populates='site')
     
     # 시공 매출의 합으로 현장 매출 리턴
     @hybrid_property
     def total_customer_price(self):
-        return sum(work.customer_price or 0 for work in self.works.all())
+        return sum(
+            (work.customer_price or 0) + (work.additional_cost or 0) for work in self.works.all()
+                   )
     
     def update_customer_price(self):
         self.customer_price = self.total_customer_price
@@ -96,12 +101,15 @@ class Work(db.Model):
     #현장 ID
     site_id = db.Column(db.Text(), db.ForeignKey('sites.id', ondelete='CASCADE'))
     #시공현장
-    site = db.relationship('Site', backref=db.backref('work_set'))
+    site = db.relationship('Site', back_populates="works")
+    #상태 ID
+    status_id = db.Column(db.Text(), db.ForeignKey('statuses.id', ondelete='CASCADE'))
+    status = db.relationship('Status', back_populates="works")
     
     #서비스 ID
     service_id = db.Column(db.Text(), db.ForeignKey('services.id', ondelete='CASCADE'))
     #서비스
-    service = db.relationship('Service', backref=db.backref('service_set'))
+    service = db.relationship('Service', back_populates="works")
     
     #작업시간대
     work_time = db.Column(db.Text())
@@ -111,7 +119,7 @@ class Work(db.Model):
     #시공업체 ID
     company_id = db.Column(db.Text(), db.ForeignKey('companies.id', ondelete='CASCADE'))
     #시공업체
-    company = db.relationship('Company', backref=db.backref('company_set'))
+    company = db.relationship('Company', back_populates="works")
     
     #메모
     memo = db.Column(db.Text())
@@ -124,9 +132,8 @@ class Work(db.Model):
     #고객 판매가
     customer_price = db.Column(db.Integer, default=0)
     #금액 변동
-    additional_cost = db.Column(db.Integer)
-    #진행상태
-    status = db.Column(db.Text())
+    additional_cost = db.Column(db.Integer, default=0)
+    
     #수정일자
     modify_date = db.Column(db.DateTime(), nullable=True)
 
@@ -148,3 +155,20 @@ class Service(db.Model):
     id = db.Column(db.Text(), primary_key=True)
     #시공품목
     name = db.Column(db.Text())
+    works = db.relationship("Work", back_populates="service")
+    
+class Status(db.Model):
+    __tablename__ = 'statuses'
+    #상태ID
+    id = db.Column(db.Integer, primary_key=True)
+    #시공품목
+    name = db.Column(db.Text())
+    works = db.relationship('Work', back_populates='status')
+
+class Tax(db.Model):
+    __tablename__ = 'taxes'
+    #상태ID
+    id = db.Column(db.Text(), primary_key=True)
+    #시공품목
+    name = db.Column(db.Text())
+    site = db.relationship('Site', back_populates='tax')
