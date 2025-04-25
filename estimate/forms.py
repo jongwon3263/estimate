@@ -12,7 +12,7 @@ class SiteForm(FlaskForm):
     notes = TextAreaField('메모')
     # customer_price = FloatField('고객 판매가')
     contract_deposit = FloatField('계약금')
-    tax_treatment = SelectField('세금 처리',choices=[],validators=[DataRequired()], default="일반")
+    tax_id = SelectField('세금 처리',choices=[],validators=[DataRequired()], default="일반")
     
 class SiteEditForm(FlaskForm):
     district = StringField('지역')

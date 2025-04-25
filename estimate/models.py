@@ -1,5 +1,5 @@
 from estimate import db
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import validates 
 from sqlalchemy.ext.hybrid import hybrid_property
 
@@ -156,6 +156,7 @@ class Service(db.Model):
     #시공품목
     name = db.Column(db.Text())
     works = db.relationship("Work", back_populates="service")
+    estimate = db.relationship("Estimate", back_populates="service")
     
 class Status(db.Model):
     __tablename__ = 'statuses'
@@ -172,3 +173,27 @@ class Tax(db.Model):
     #시공품목
     name = db.Column(db.Text())
     site = db.relationship('Site', back_populates='tax')
+    
+class Estimate(db.Model):
+    __tablename__ = 'estimates'
+    id = db.Column(db.Integer, primary_key=True)
+    customer_name = db.Column(db.String(10))
+    phone = db.Column(db.String(20))
+    estimated_date = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    note = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    
+    service_id = db.Column(db.Text(), db.ForeignKey('services.id'))
+    service = db.relationship('Service', back_populates='estimate')
+    
+    status_id = db.Column(db.Integer, db.ForeignKey('estimate_statuses.id'))
+    status = db.relationship('EstimateStatus', back_populates='estimates')
+    
+class EstimateStatus(db.Model):
+    __tablename__ = 'estimate_statuses'
+    #상태ID
+    id = db.Column(db.Integer, primary_key=True)
+    #시공품목
+    name = db.Column(db.String(10))
+    
+    estimates = db.relationship('Estimate', back_populates='status')

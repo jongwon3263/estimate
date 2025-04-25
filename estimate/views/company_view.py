@@ -2,9 +2,9 @@ from flask import Flask, render_template, Blueprint
 
 from estimate.models import Company
 
-bp = Blueprint('company', __name__, url_prefix='/')
+bp = Blueprint('company', __name__, url_prefix='/company')
 
-@bp.route('/company')
+@bp.route('/')
 def index():
     company_list = Company.query.order_by(Company.name.desc())
     cleaning_companies = Company.query.filter_by(service_id="CL").all()
@@ -26,7 +26,7 @@ def index():
         etc_companies=etc_companies
         )
 
-@bp.route('/company_detail/<int:company_id>/')
+@bp.route('/detail/<int:company_id>/')
 def detail(company_id):
     company = Company.query.get_or_404(company_id)
     return render_template('company/company_detail.html', company=company)

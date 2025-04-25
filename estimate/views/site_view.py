@@ -21,31 +21,36 @@ def index():
     contract_date = request.args.get('contract_date')
     tax_ids = request.args.getlist('taxes')
     sort_by = request.args.get('sort_by', 'contract-date')
-    sort_order = request.args.get('sort_order', 'asc')
+    sort_order = request.args.get('sort_order', 'desc')
 
     # 관계 모델 alias
     company_alias = aliased(Company)
     work_alias = aliased(Work)
 
-    site_query = Site.query
+    site_query = Site.query.filter(Site.archive == 0)
 
-    # 🔍 키워드 검색
-    # 키워드가 있으면 먼저 join (기본적으로 work_alias 사용)
+    # 🧠 work 테이블을 반드시 join해야 하는 조건
+    need_work_join = (
+        keyword or
+        service_ids or
+        company_id or
+        status_ids or
+        sort_by == 'start-date'
+    )
+
+    # 필요하면 work 테이블 조인
+    if need_work_join:
+        site_query = site_query.join(work_alias, work_alias.site_id == Site.id)
+
+    # 🔍 키워드 필터 (추가적으로 company 조인)
     if keyword:
-        site_query = site_query\
-            .join(work_alias, work_alias.site_id == Site.id)\
-            .join(company_alias, company_alias.id == work_alias.company_id)\
-            .filter(or_(
-                Site.address.ilike(f"%{keyword}%"),
-                Site.depositor.ilike(f"%{keyword}%"),
-                company_alias.name.ilike(f"%{keyword}%"),
-                work_alias.details.ilike(f"%{keyword}%"),
-                work_alias.memo.ilike(f"%{keyword}%")
-            ))
-    else:
-        # 키워드가 없으면 필요한 조건만 조건별로 join
-        if service_ids or company_id or status_ids:
-            site_query = site_query.join(work_alias, work_alias.site_id == Site.id)
+        site_query = site_query.join(company_alias, company_alias.id == work_alias.company_id).filter(or_(
+            Site.address.ilike(f"%{keyword}%"),
+            Site.depositor.ilike(f"%{keyword}%"),
+            company_alias.name.ilike(f"%{keyword}%"),
+            work_alias.details.ilike(f"%{keyword}%"),
+            work_alias.memo.ilike(f"%{keyword}%")
+        ))
 
     # 🔎 서비스 필터
     if service_ids:
@@ -67,21 +72,24 @@ def index():
     if tax_ids:
         site_query = site_query.filter(Site.tax_id.in_(tax_ids))
 
-    # 🔁 정렬
+    # 🔁 정렬 설정
     sort_column_map = {
         'district': Site.district,
         'address': Site.address,
         'contract-date': Site.contract_date,
         'depositor': Site.depositor,
-        'start-date': Work.start_date  # 실제 정렬 기준이 필요하다면 join 추가
+        'start-date': work_alias.start_date  # work_alias 기준으로 변경
     }
 
     sort_column = sort_column_map.get(sort_by, Site.contract_date)
     if sort_order == 'desc':
         sort_column = sort_column.desc()
+    else:
+        sort_column = sort_column.asc()
+
     site_query = site_query.order_by(sort_column)
 
-    # 🔚 중복 제거 + 쿼리 실행
+    # 🔚 실행
     site_list = site_query.distinct().all()
 
     return render_template('site/site_list.html',
@@ -163,6 +171,9 @@ def detail(site_id):
 def create():
     form = SiteForm()
     
+    taxes = Tax.query.all()
+    form.tax_id.choices = [(tax.id, tax.name) for tax in taxes]
+    
     if request.method == 'POST' and form.validate_on_submit():
         site = Site(
             district=form.district.data,
@@ -172,7 +183,7 @@ def create():
             depositor=form.depositor.data,
             notes=form.notes.data,
             customer_phone=form.customer_phone.data,
-            tax_treatment=form.tax_treatment.data,  # ✅ 추가
+            tax_id=form.tax_id.data,  # ✅ 추가
             contract_date=datetime.now()
             )
         db.session.add(site)

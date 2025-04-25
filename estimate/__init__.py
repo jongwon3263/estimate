@@ -41,11 +41,12 @@ def create_app():
     app.jinja_env.filters["format_currency"] = format_currency  # 필터 등록
     
     # blueprint
-    from .views import input_view, company_view, site_view, work_view, service_view
+    from .views import input_view, company_view, site_view, work_view, service_view, estimate_view
     app.register_blueprint(input_view.bp)
     app.register_blueprint(company_view.bp)
     app.register_blueprint(site_view.bp)
     app.register_blueprint(work_view.bp)
     app.register_blueprint(service_view.bp)
+    app.register_blueprint(estimate_view.bp)
 
     return app  # Flask 인스턴스 반환
