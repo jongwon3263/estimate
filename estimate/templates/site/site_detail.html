@@ -19,6 +19,7 @@
                     <li>잔금: {{ site.remaining_balance | format_currency }}</li>
                     <li>계약일: {{ site.contract_date }}</li>
                     <li>세금 처리: {{ site.tax.name }}</li>
+                    <li>메모: {{ site.notes }}</li>
                 </ul>
                 <button id="site-edit-btn" class="btn btn-primary">현장정보 수정</button>
                 <!--<button id="cash-receipt-btn" class="btn btn-primary">현금영수증 발급</button>-->
@@ -55,6 +56,9 @@
 
                     <label for="tax_treatment">세금 처리</label>
                     {{ site_form.tax_treatment(class="form-control", id="tax_treatment") }}
+
+                    <label for="notes">메모</label>
+                    {{ site_form.notes(class="form-control", id="notes") }}
 
                     <button type="submit" class="btn btn-success mt-3">저장</button>
                     <button type="button" id="cancel-btn" class="btn btn-secondary mt-3">취소</button>

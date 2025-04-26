@@ -123,9 +123,13 @@ def edit_work(work_id):
 
     # 🔹 AJAX 요청이면 JSON으로 에러 반환
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({"success": False, "error": "입력값이 올바르지 않습니다."}), 400
-
+        return jsonify({
+            "success": False,
+            "error": "입력값이 올바르지 않습니다.",
+            "form_errors": form.errors  # 🔥 추가: 디버깅용 폼 에러도 반환
+        }), 400
     flash("입력값이 올바르지 않습니다.", "danger")
+    
     return render_template(
         'site/site_detail.html',
         site=site,

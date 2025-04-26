@@ -178,16 +178,15 @@ class Estimate(db.Model):
     __tablename__ = 'estimates'
     id = db.Column(db.Integer, primary_key=True)
     customer_name = db.Column(db.String(10))
-    phone = db.Column(db.String(20))
-    estimated_date = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
-    note = db.Column(db.Text)
+    address = db.Column(db.String(100))
+    customer_phone = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     service_id = db.Column(db.Text(), db.ForeignKey('services.id'))
     service = db.relationship('Service', back_populates='estimate')
     
-    status_id = db.Column(db.Integer, db.ForeignKey('estimate_statuses.id'))
-    status = db.relationship('EstimateStatus', back_populates='estimates')
+    estimate_status_id = db.Column(db.Integer, db.ForeignKey('estimate_statuses.id'))
+    estimate_status = db.relationship('EstimateStatus', back_populates='estimates')
     
 class EstimateStatus(db.Model):
     __tablename__ = 'estimate_statuses'
@@ -196,4 +195,4 @@ class EstimateStatus(db.Model):
     #시공품목
     name = db.Column(db.String(10))
     
-    estimates = db.relationship('Estimate', back_populates='status')
+    estimates = db.relationship('Estimate', back_populates='estimate_status')

@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, DateField, IntegerField, SubmitField, FloatField
-from wtforms.validators import DataRequired, NumberRange
+from wtforms.validators import DataRequired, NumberRange, Optional
 
 class SiteForm(FlaskForm):
     district = StringField('지역')
@@ -49,20 +49,26 @@ class WorkAddForm(FlaskForm):
 
 class WorkEditForm(FlaskForm):
     service = SelectField('시공', choices=[])
-    company = SelectField('업체', choices=[])
-    start_date = DateField('시작일', format='%Y-%m-%d')
-    end_date = DateField('종료일', format='%Y-%m-%d')
-    work_time = StringField('작업 시간대')
-    details = StringField('상세 사항')
-    memo = StringField('메모')
-    customer_price = FloatField('고객 판매가', default=0)
-    company_cost = FloatField('업체 도급가', default=0)
-    additional_cost = FloatField('금액 변동', default=0)
-    status = SelectField('상태', choices=[], coerce=int)
+    company = SelectField('업체', choices=[], validate_choice=False, coerce=str)
+    start_date = DateField('시작일', format='%Y-%m-%d', validators=[Optional()])
+    end_date = DateField('종료일', format='%Y-%m-%d', validators=[Optional()])
+    work_time = StringField('작업 시간대', validators=[Optional()])
+    details = StringField('상세 사항', validators=[Optional()])
+    memo = StringField('메모', validators=[Optional()])
+    customer_price = FloatField('고객 판매가', default=0, validators=[Optional()])
+    company_cost = FloatField('업체 도급가', default=0, validators=[Optional()])
+    additional_cost = FloatField('금액 변동', default=0, validators=[Optional()])
+    status = SelectField('상태', choices=[], coerce=int, validators=[Optional()])
 
     def set_choices(self, services, companies, statuses):
         """ 드롭다운 목록을 설정하는 함수 """
         self.service.choices = [(service.id, service.name) for service in services]
         self.company.choices = [(company.id, company.name) for company in companies]
         self.status.choices = [(status.id, status.name) for status in statuses]
+    
+class EstimateForm(FlaskForm):
+    customer_name = TextAreaField('고객명')
+    address = TextAreaField('주소')
+    customer_phone = TextAreaField('고객 연락처')
+    estimated_date = DateField('견적서 생성일', format='%Y-%m-%d', validators=[DataRequired()])
     

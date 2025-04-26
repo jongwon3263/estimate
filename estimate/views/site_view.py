@@ -201,6 +201,7 @@ def modify_site(site_id):
     site.room_size = request.form.get('room_size')
     site.depositor = request.form.get('depositor')
     site.customer_phone = request.form.get('customer_phone')
+    site.notes = request.form.get('notes')
 
     # 🔹 숫자로 변환하여 저장 (콤마 제거 후 정수 변환)
     customer_price = request.form.get('customer_price', "0").replace(",", "")
@@ -234,7 +235,8 @@ def modify_site(site_id):
         "customer_price": site.customer_price,  # ✅ 정수 값 반환
         "contract_deposit": site.contract_deposit,  # ✅ 정수 값 반환
         "remaining_balance": site.remaining_balance,  # ✅ 자동 계산된 값 반환
-        "tax_treatment": site.tax.name if site.tax else ""
+        "tax_treatment": site.tax.name if site.tax else "",
+        "notes": site.notes,
     })
 
     
