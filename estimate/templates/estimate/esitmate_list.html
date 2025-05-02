@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container my-3">
-    <a href="" class="btn btn-primary" style="float: right;">견적서 작성</a>
+    <a href="{{ url_for('estimate.create') }}" class="btn btn-primary" style="float: right;">견적서 작성</a>
     <h2>견적서</h2>
     <div class="col-6">
 

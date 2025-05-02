@@ -4,7 +4,7 @@
 <div class="container">
     <div class="site-add-container">
         <h5 class="my-3 border-bottom pb-2">현장 등록</h5>
-        <form method="post" class="my-3">
+        <form method="post" class="my-3" onkeydown="return event.key !== 'Enter';">
             {{ form.hidden_tag() }}  <!-- CSRF 보호 포함 -->
 
             <div class="mb-3">

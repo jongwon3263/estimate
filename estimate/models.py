@@ -3,6 +3,12 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import validates 
 from sqlalchemy.ext.hybrid import hybrid_property
 
+# 중간 테이블 정의 (plain Table 사용)
+estimate_services = db.Table('estimate_services',
+    db.Column('estimate_id', db.Integer, db.ForeignKey('estimates.id')),
+    db.Column('service_id', db.Text, db.ForeignKey('services.id'))
+)
+
 class Company(db.Model):
     __tablename__ = 'companies'  # 테이블 명시적 지정
     #업체 ID
@@ -151,12 +157,11 @@ class Work(db.Model):
     
 class Service(db.Model):
     __tablename__ = 'services'
-    #시공ID
-    id = db.Column(db.Text(), primary_key=True)
-    #시공품목
+    id = db.Column(db.Text, primary_key=True)
     name = db.Column(db.Text())
+
     works = db.relationship("Work", back_populates="service")
-    estimate = db.relationship("Estimate", back_populates="service")
+    estimates = db.relationship('Estimate', secondary=estimate_services, back_populates='services')
     
 class Status(db.Model):
     __tablename__ = 'statuses'
@@ -182,12 +187,10 @@ class Estimate(db.Model):
     customer_phone = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
-    service_id = db.Column(db.Text(), db.ForeignKey('services.id'))
-    service = db.relationship('Service', back_populates='estimate')
-    
     estimate_status_id = db.Column(db.Integer, db.ForeignKey('estimate_statuses.id'))
     estimate_status = db.relationship('EstimateStatus', back_populates='estimates')
-    
+    # N:M 관계
+    services = db.relationship('Service', secondary=estimate_services, back_populates='estimates')
 class EstimateStatus(db.Model):
     __tablename__ = 'estimate_statuses'
     #상태ID
@@ -196,3 +199,4 @@ class EstimateStatus(db.Model):
     name = db.Column(db.String(10))
     
     estimates = db.relationship('Estimate', back_populates='estimate_status')
+    

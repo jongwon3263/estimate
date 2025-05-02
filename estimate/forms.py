@@ -70,5 +70,4 @@ class EstimateForm(FlaskForm):
     customer_name = TextAreaField('고객명')
     address = TextAreaField('주소')
     customer_phone = TextAreaField('고객 연락처')
-    estimated_date = DateField('견적서 생성일', format='%Y-%m-%d', validators=[DataRequired()])
     

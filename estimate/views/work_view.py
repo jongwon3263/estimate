@@ -172,4 +172,4 @@ def mark_work_done(work_id):
         work.status_id = done_status.id
     db.session.commit()
 
-    return jsonify({"success": True, "status": work.name})
+    return jsonify({"success": True, "status": work.status.name})
