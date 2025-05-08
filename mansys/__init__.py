@@ -20,7 +20,7 @@ migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object('estimate.config')
+    app.config.from_object('mansys.config')
     app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
     app.config['TEMPLATES_AUTO_RELOAD'] = os.getenv('TEMPLATES_AUTO_RELOAD', 'False') == 'True'
     

@@ -1,4 +1,4 @@
-from estimate import db
+from mansys import db
 from datetime import datetime, timezone
 from sqlalchemy.orm import validates 
 from sqlalchemy.ext.hybrid import hybrid_property

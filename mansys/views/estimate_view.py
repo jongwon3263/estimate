@@ -1,6 +1,6 @@
 from flask import render_template, Blueprint
-from estimate.models import Estimate
-from estimate.forms import EstimateForm
+from mansys.models import Estimate
+from mansys.forms import EstimateForm
 from .. import db
 
 from flask import render_template, Blueprint, request, url_for, jsonify, flash

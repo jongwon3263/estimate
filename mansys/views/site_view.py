@@ -6,8 +6,8 @@ from flask import render_template, Blueprint, request, url_for, jsonify, flash
 from werkzeug.utils import redirect
 
 from .. import db
-from estimate.models import Site, Service, Company, Work, Status, Tax
-from estimate.forms import SiteForm, SiteEditForm, WorkAddForm, WorkEditForm
+from mansys.models import Site, Service, Company, Work, Status, Tax
+from mansys.forms import SiteForm, SiteEditForm, WorkAddForm, WorkEditForm
 
 
 bp = Blueprint('site', __name__, url_prefix='/sites')

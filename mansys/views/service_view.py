@@ -1,5 +1,5 @@
 from flask import render_template, Blueprint
-from estimate.models import Service
+from mansys.models import Service
 
 bp = Blueprint('service', __name__, url_prefix='/service')
 

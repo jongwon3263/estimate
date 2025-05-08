@@ -1,6 +1,6 @@
 from flask import Flask, render_template, Blueprint
 
-from estimate.models import Company
+from mansys.models import Company
 
 bp = Blueprint('company', __name__, url_prefix='/company')
 
