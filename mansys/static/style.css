@@ -189,19 +189,6 @@ summary {
 summary::marker {
     content: ""; /* 마커 제거 */
 }
-
-#paint-container,
-#julun-container,
-#coating-container {
-    transition: background-color 0.3s ease-in-out; /* 배경색 변화 시간과 속도 설정 */
-}
-
-#paint-container:hover,
-#julun-container:hover,
-#coating-container:hover {
-    background-color:#FFFF66;
-}
-
 .initializeButton{
     float: right;
 }
@@ -294,7 +281,19 @@ summary::marker {
     font-size: 50px;
   }
   
-  .my-float{
+.my-float{
     margin-top:22px;
   }
 
+.show{
+    display: block;
+}
+
+.hide{
+    display: none;
+}
+
+.dropdown{
+    height:30px;
+    width:120px;
+}

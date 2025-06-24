@@ -1,0 +1,34 @@
+<div class="individual-container">
+
+    <h2>고객 정보</h2>
+    <div class="small-container">
+        <label style="font-size:20px;">고객명</label>
+        <input type="text" id="customer"><br>
+
+        <label style="font-size:20px;">주소</label>
+        <input type="text" id="address"><br>
+
+        <label style="font-size:20px;">연락처</label>
+        <input type="tel" id="customerPhone"><br>
+
+        <select style="height:30px; width:120px;" id="selectRoomType">
+            <option value="none" selected>집 구조 선택</option>
+            <option value="normalType">일반 평수</option>
+            <option value="smallType">소형 평수</option>
+        </select><br>
+        <div id="inputPyeong" class="hide">
+            <label style="font-size:20px;">평수 입력</label>
+            <input type="number" id="pyeong">
+        </div>
+        <div id="smallType" class="hide">
+            <select style="height:30px; width:120px;" id="smallRoomTypeSelector">
+                <option value="" selected>구조 선택</option>
+                <option value="smallRoom1" id="room_2_1">일체형 원룸</option>
+                <option value="smallRoom2" id="room_2_2">분리형 원룸</option>
+                <option value="smallRoom3" id="room_2_3">복층형 원룸</option>
+                <option value="smallRoom4" id="room_2_4">방2, 욕실1</option>
+                <option value="smallRoom5" id="room_2_5">방3, 욕실1</option>
+                <option value="smallRoom6" id="room_2_6">방3, 욕실2</option>
+            </select><br>
+        </div>
+</div> 

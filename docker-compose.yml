@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:15
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: blues3263
+      POSTGRES_DB: mansys
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - mansys-net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: jongwon3263@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: blues3263
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - mansys-net
+
+  flask:
+    build: .
+    container_name: flask-app
+    command: flask run --host=0.0.0.0
+    env_file:
+      - .env
+    ports:
+      - "5001:5000"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+    working_dir: /app
+    networks:
+      - mansys-net
+
+volumes:
+  postgres-data:
+
+networks:
+  mansys-net:

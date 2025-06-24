@@ -3,12 +3,6 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import validates 
 from sqlalchemy.ext.hybrid import hybrid_property
 
-# 중간 테이블 정의 (plain Table 사용)
-estimate_services = db.Table('estimate_services',
-    db.Column('estimate_id', db.Integer, db.ForeignKey('estimates.id')),
-    db.Column('service_id', db.Text, db.ForeignKey('services.id'))
-)
-
 class Company(db.Model):
     __tablename__ = 'companies'  # 테이블 명시적 지정
     #업체 ID
@@ -17,11 +11,10 @@ class Company(db.Model):
     name = db.Column(db.String(100))
     #시공품목
     service_id = db.Column(db.Text, db.ForeignKey('services.id'))
-    service = db.relationship('Service', backref='companies')
+    service = db.relationship('Service', back_populates='companies')
     #연락처
     phone = db.Column(db.Text())
     works = db.relationship("Work", back_populates="company")
-    
 class Site(db.Model):
     __tablename__ = 'sites'
     #시공ID
@@ -33,7 +26,8 @@ class Site(db.Model):
     #주거 형태
     residence_type = db.Column(db.Text())
     #방 크기
-    room_size = db.Column(db.Text())
+    room_size = db.Column(db.Integer)
+    room_size_small = db.Column(db.String(50))
     #메모
     notes = db.Column(db.Text())
     #입금자명
@@ -54,7 +48,7 @@ class Site(db.Model):
     modify_date = db.Column(db.DateTime(), nullable=True)
     #아카이브 여부
     archive = db.Column(db.Integer, default=0)
-    
+    #세금 ID 생성, 모델과의 연결
     tax_id = db.Column(db.Text(), db.ForeignKey('taxes.id'))
     tax = db.relationship('Tax', back_populates='site')
     
@@ -98,35 +92,26 @@ class Site(db.Model):
     def update_remaining_balance(self):
         """고객 판매가와 계약금 변경 시 잔금을 자동 업데이트"""
         self.remaining_balance = max(self.customer_price - self.contract_deposit, 0)
-    
 class Work(db.Model):
     __tablename__ = 'works'
     #개별시공ID
     id = db.Column(db.Text(), primary_key=True)
-    
-    #현장 ID
+    #현장 ID 생성, 모델과의 연결
     site_id = db.Column(db.Text(), db.ForeignKey('sites.id', ondelete='CASCADE'))
-    #시공현장
     site = db.relationship('Site', back_populates="works")
-    #상태 ID
-    status_id = db.Column(db.Text(), db.ForeignKey('statuses.id', ondelete='CASCADE'))
+    #상태 ID 생성, 모델과의 연결
+    status_id = db.Column(db.Integer, db.ForeignKey('statuses.id', ondelete='CASCADE'))
     status = db.relationship('Status', back_populates="works")
-    
-    #서비스 ID
+    #서비스 ID 생성, 모델과의 연결
     service_id = db.Column(db.Text(), db.ForeignKey('services.id', ondelete='CASCADE'))
-    #서비스
     service = db.relationship('Service', back_populates="works")
-    
     #작업시간대
     work_time = db.Column(db.Text())
     #상세 내용
     details = db.Column(db.Text())
-    
-    #시공업체 ID
-    company_id = db.Column(db.Text(), db.ForeignKey('companies.id', ondelete='CASCADE'))
-    #시공업체
+    #시공업체 ID 생성, 모델과의 연결
+    company_id = db.Column(db.Integer, db.ForeignKey('companies.id', ondelete='CASCADE'))
     company = db.relationship('Company', back_populates="works")
-    
     #메모
     memo = db.Column(db.Text())
     #시작 날짜
@@ -154,15 +139,7 @@ class Work(db.Model):
     def generate_id(self):
         """ ID 형식: site_id-service_id """
         return f"{self.site_id}-{self.service_id}"  # 예: 250226-001-CL
-    
-class Service(db.Model):
-    __tablename__ = 'services'
-    id = db.Column(db.Text, primary_key=True)
-    name = db.Column(db.Text())
 
-    works = db.relationship("Work", back_populates="service")
-    estimates = db.relationship('Estimate', secondary=estimate_services, back_populates='services')
-    
 class Status(db.Model):
     __tablename__ = 'statuses'
     #상태ID
@@ -170,7 +147,6 @@ class Status(db.Model):
     #시공품목
     name = db.Column(db.Text())
     works = db.relationship('Work', back_populates='status')
-
 class Tax(db.Model):
     __tablename__ = 'taxes'
     #상태ID
@@ -178,25 +154,70 @@ class Tax(db.Model):
     #시공품목
     name = db.Column(db.Text())
     site = db.relationship('Site', back_populates='tax')
+
+class Service(db.Model):
+    __tablename__ = 'services'
+    id = db.Column(db.Text, primary_key=True)
+    name = db.Column(db.Text())
+    
+    companies = db.relationship('Company', back_populates='service')
+    works = db.relationship("Work", back_populates='service')
+    options = db.relationship('ServiceOption', back_populates='service', lazy=True)
+    categories = db.relationship('ServiceCategory', back_populates='service', cascade='all, delete-orphan')
+    
+class ServiceCategory(db.Model):
+    __tablename__ = 'service_categories'
+    id = db.Column(db.Integer, primary_key=True)
+    service_id = db.Column(db.Text, db.ForeignKey('services.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    code = db.Column(db.String(10))
+    
+    service = db.relationship('Service', back_populates='categories')
+    options = db.relationship('ServiceOption', back_populates='category')
+class ServiceOption(db.Model):
+    __tablename__ = 'service_options'
+
+    id = db.Column(db.Integer, primary_key=True)
+    service_id = db.Column(db.Text, db.ForeignKey('services.id'), nullable=True)
+    category_id = db.Column(db.Integer, db.ForeignKey('service_categories.id'))
+    category = db.relationship('ServiceCategory', back_populates='options')
+
+    name = db.Column(db.String(100), nullable=False)  # 예: 베이직, 방3 욕실2
+    category_code = db.Column(db.Integer, nullable=True)
+    code = db.Column(db.Integer, nullable=True)
+    price = db.Column(db.Integer, nullable=False)     # 평당가 또는 고정가
+    per_pyeong = db.Column(db.Boolean, default=False) # 평당 여부
+    
+
+    service = db.relationship('Service', back_populates='options')
+    
+    estimate_items = db.relationship('EstimateItem', back_populates='service_option')
     
 class Estimate(db.Model):
     __tablename__ = 'estimates'
     id = db.Column(db.Integer, primary_key=True)
+    #고객 이름
     customer_name = db.Column(db.String(10))
-    address = db.Column(db.String(100))
+    #연락처
     customer_phone = db.Column(db.String(20))
+    #주소
+    address = db.Column(db.String(100))
+    
+    total_price = db.Column(db.Integer, default=0)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    status = db.Column(db.String(20))
+    items = db.relationship('EstimateItem', back_populates='estimate', lazy=True, cascade="all, delete-orphan")
     
-    estimate_status_id = db.Column(db.Integer, db.ForeignKey('estimate_statuses.id'))
-    estimate_status = db.relationship('EstimateStatus', back_populates='estimates')
-    # N:M 관계
-    services = db.relationship('Service', secondary=estimate_services, back_populates='estimates')
-class EstimateStatus(db.Model):
-    __tablename__ = 'estimate_statuses'
-    #상태ID
+class EstimateItem(db.Model):
+    __tablename__ = 'estimate_items'
+
     id = db.Column(db.Integer, primary_key=True)
-    #시공품목
-    name = db.Column(db.String(10))
-    
-    estimates = db.relationship('Estimate', back_populates='estimate_status')
-    
+    estimate_id = db.Column(db.Integer, db.ForeignKey('estimates.id'), nullable=False)
+    estimate = db.relationship('Estimate', back_populates='items')
+    service_option_id = db.Column(db.Integer, db.ForeignKey('service_options.id'), nullable=False)
+
+    pyeong = db.Column(db.Float, nullable=True)    # 평당 가격일 경우 사용
+    quantity = db.Column(db.Integer, default=1)    # 보통은 1개, 필요한 경우만 다수
+    price = db.Column(db.Integer, nullable=False)  # 계산된 총 금액
+
+    service_option = db.relationship('ServiceOption', back_populates='estimate_items')
