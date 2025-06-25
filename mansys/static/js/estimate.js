@@ -59,57 +59,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
 
-    //가격_할인
-    const discountDiv1 = document.getElementById('discount1');
-    const discountDiv2 = document.getElementById('discount2');
-    const discountInput = document.getElementById('discountInput');
-
-    //금액 계산
-    const totalPriceResultFinal = document.getElementById('totalPriceResultFinal');
-    const beforeDiscount = document.getElementById('beforeDiscount');
-    function final() {
-        //가격_정수형태
-        const cleaningInt = parseInt(cleaningPriceDiv.textContent.replace(/[^0-9]/g, '')) || 0;
-        const groutInt = parseInt(groutPriceTotal.textContent.replace(/[^0-9]/g, '')) || 0;
-        const keraInt = parseInt(keraPriceTotal.textContent.replace(/[^0-9]/g, '')) || 0;
-        const newhouseInt = parseInt(newhousePrice.textContent.replace(/[^0-9]/g, '')) || 0;
-        const paintInt = parseInt(paintPrice.textContent.replace(/[^0-9]/g, '')) || 0;
-        const floorInt = parseInt(floorCoatingPrice.textContent.replace(/[^0-9]/g, '')) || 0;
-        const coatingInt = parseInt(coatingPriceTotal.textContent.replace(/[^0-9]/g, '')) || 0;
-        const applianceInt = parseInt(apPrice.textContent.replace(/[^0-9]/g, '')) || 0;
-        const beforDiscoutPrice = cleaningInt + groutInt + keraInt + newhouseInt + paintInt + floorInt + coatingInt + applianceInt;
-        // 기본 금액 계산
-        let totalPrice = cleaningInt + groutInt + keraInt + newhouseInt + paintInt + floorInt + coatingInt + applianceInt;
-        //할인 금액
-        let discount1Amount = 0;
-        let discount2Amount = 0;
-        // let discount3Amount = parseInt(discountInput.value) || 0;
-
-        // 2. 1번 할인: 100만원당 1% 할인 (최대 10%)
-        if (totalPrice >= 1000000) {
-            const millionUnit = Math.floor(totalPrice / 1000000);
-            const discountRate = Math.min(millionUnit, 10) * 0.01;
-            discount1Amount = Math.floor(beforDiscoutPrice * discountRate);
-            discountDiv1.textContent = `할인 1번_골라담아 다다익선: -${discount1Amount.toLocaleString()}원`;
-        }
-        // 3. 2번 할인: 청소 + 새집증후군 선택 시 평당 1,000원 할인
-        if (checkCleaning.checked && checkNewhouse.checked) {
-            const pyeong = getPyeongValue();
-            discount2Amount = Math.floor(pyeong) * 1000;
-            discountDiv2.textContent = `할인 2번_청소와 함께라면: -${discount2Amount.toLocaleString()}원`;
-        }
 
 
-        // 4. 표시
-        totalPrice = totalPrice - discount1Amount - discount2Amount;
-        beforeDiscount.textContent = `할인 전 금액: ${beforDiscoutPrice.toLocaleString()}원`;
-        totalPriceResultFinal.textContent = `최종 합계: ${totalPrice.toLocaleString()}원`;
-
-    }
-    //입력 할인 실시간 갱신
-
-
-    //할인
 
     //체크박스 체크 여부에 따른 옆 체크박스 비활성화
     const pairs = [
@@ -117,12 +68,16 @@ document.addEventListener('DOMContentLoaded', function () {
         ['gr_1_7', 'gr_1_8'],
         ['gr_2_1', 'gr_2_2'],
         ['gr_3_3', 'gr_3_4'],
-        ['kp_1_7', 'kp_1_8'],
+        ['kp_1_8', 'kp_1_9'],
         ['ct_1_1', 'ct_1_2'],
         ['ct_2_1', 'ct_2_2'],
         ['ct_3_1', 'ct_3_2'],
         ['ct_4_3', 'ct_4_4'],
+        ['kp_2_1', 'kp_2_2'],
+        ['kp_1_2', 'kp_1_3'],
     ];
+
+
 
     pairs.forEach(([id1, id2]) => {
         const el1 = document.getElementById(id1);
@@ -730,5 +685,77 @@ document.addEventListener('DOMContentLoaded', function () {
             updateApPrices();
         });
     });
+
+    //가격_할인
+    const discountDiv1 = document.getElementById('discount1');
+    const discountDiv2 = document.getElementById('discount2');
+    const discountInput = document.getElementById('discountInput');
+
+    //금액 계산
+    const totalPriceResultFinal = document.getElementById('totalPriceResultFinal');
+    const beforeDiscount = document.getElementById('beforeDiscount');
+    function final() {
+        //가격_정수형태
+        const cleaningInt = parseInt(cleaningPriceDiv.textContent.replace(/[^0-9]/g, '')) || 0;
+        const groutInt = parseInt(groutPriceTotal.textContent.replace(/[^0-9]/g, '')) || 0;
+        const keraInt = parseInt(keraPriceTotal.textContent.replace(/[^0-9]/g, '')) || 0;
+        const newhouseInt = parseInt(newhousePrice.textContent.replace(/[^0-9]/g, '')) || 0;
+        const paintInt = parseInt(paintPrice.textContent.replace(/[^0-9]/g, '')) || 0;
+        const floorInt = parseInt(floorCoatingPrice.textContent.replace(/[^0-9]/g, '')) || 0;
+        const coatingInt = parseInt(coatingPriceTotal.textContent.replace(/[^0-9]/g, '')) || 0;
+        const applianceInt = parseInt(apPrice.textContent.replace(/[^0-9]/g, '')) || 0;
+        const beforDiscoutPrice = cleaningInt + groutInt + keraInt + newhouseInt + paintInt + floorInt + coatingInt + applianceInt;
+        // 기본 금액 계산
+        let totalPrice = cleaningInt + groutInt + keraInt + newhouseInt + paintInt + floorInt + coatingInt + applianceInt;
+        //할인 금액
+        const discountContainer = document.querySelector('.discountContainer');
+        let discount1Amount = 0;
+        let discount2Amount = 0;
+        //줄눈패키지
+        // let packageGR1_discountAmout = 0;
+        let packageGR2_discountAmout = 0;
+        let packageGR3_discountAmout = 0;
+        let packageGR
+
+        //100만원당 1% 할인 (최대 10%)
+        if (totalPrice >= 1000000) {
+            const millionUnit = Math.floor(totalPrice / 1000000);
+            const discountRate = Math.min(millionUnit, 10) * 0.01;
+            discount1Amount = Math.floor(beforDiscoutPrice * discountRate);
+            discountDiv1.textContent = `할인 1번_골라담아 다다익선: -${discount1Amount.toLocaleString()}원`;
+        }
+        //청소 + 새집증후군 선택 시 평당 1,000원 할인
+        if (checkCleaning.checked && checkNewhouse.checked) {
+            const pyeong = getPyeongValue();
+            discount2Amount = Math.floor(pyeong) * 1000;
+            discountDiv2.textContent = `할인 2번_청소와 함께라면: -${discount2Amount.toLocaleString()}원`;
+        }
+
+        // 줄눈 패키지 할인
+        // 줄눈 패키지 2: 스탠다드
+        const gr_1_2 = document.getElementById('gr_1_2');
+        const gr_2_3 = document.getElementById('gr_2_3');
+        const gr_2_2 = document.getElementById('gr_2_2');
+        // const packageGR1 = document.getElementById('packageGR1');
+        const packageGR2 = document.getElementById('packageGR2');
+        const packageGR3 = document.getElementById('packageGR3');
+        
+        if (gr_1_2.checked && gr_2_3.checked) {
+            packageGR2_discountAmout = 70000; // 줄눈 패키지 할인 금액
+            packageGR2.textContent = `줄눈 패키지 할인 스탠다드: -${packageGR2_discountAmout.toLocaleString()}원`;
+        }
+
+        if (gr_1_2.checked && gr_2_3.checked && gr_2_2.checked) {
+            packageGR3_discountAmout = 240000; // 줄눈 패키지 할인 금액
+            packageGR3.textContent = `줄눈 패키지 할인 스탠다드: -${packageGR3_discountAmout.toLocaleString()}원`;
+        }
+
+
+        // 4. 표시
+        totalPrice = totalPrice - discount1Amount - discount2Amount - packageGR2_discountAmout - packageGR3_discountAmout;
+        beforeDiscount.textContent = `할인 전 금액: ${beforDiscoutPrice.toLocaleString()}원`;
+        totalPriceResultFinal.textContent = `최종 합계: ${totalPrice.toLocaleString()}원`;
+
+    }
 
 });

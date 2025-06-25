@@ -1,15 +1,18 @@
+<link rel="stylesheet" href="{{ url_for('static', filename='estimate.css') }}">
 <div class="individual-container">
-
     <h2>고객 정보</h2>
     <div class="small-container">
-        <label style="font-size:20px;">고객명</label>
+        <label class="estimate_label">고객명</label>
         <input type="text" id="customer"><br>
 
-        <label style="font-size:20px;">주소</label>
+        <label class="estimate_label">주소</label>
         <input type="text" id="address"><br>
 
-        <label style="font-size:20px;">연락처</label>
+        <label class="estimate_label">연락처</label>
         <input type="tel" id="customerPhone"><br>
+
+        <label class="estimate_label">작업 일정</label>
+        <input type="date" id="customerPhone"><br>
 
         <select style="height:30px; width:120px;" id="selectRoomType">
             <option value="none" selected>집 구조 선택</option>
