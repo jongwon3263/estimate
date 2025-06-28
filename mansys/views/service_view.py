@@ -1,5 +1,5 @@
 from flask import render_template, Blueprint
-from mansys.models import Service
+from mansys.models import Service, ServiceOption
 
 bp = Blueprint('service', __name__, url_prefix='/service')
 

@@ -163,6 +163,7 @@ class Service(db.Model):
     companies = db.relationship('Company', back_populates='service')
     works = db.relationship("Work", back_populates='service')
     options = db.relationship('ServiceOption', back_populates='service', lazy=True)
+    discounts = db.relationship('Discount', back_populates='service', lazy=True)
     categories = db.relationship('ServiceCategory', back_populates='service', cascade='all, delete-orphan')
     
 class ServiceCategory(db.Model):
@@ -182,16 +183,33 @@ class ServiceOption(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('service_categories.id'))
     category = db.relationship('ServiceCategory', back_populates='options')
 
-    name = db.Column(db.String(100), nullable=False)  # 예: 베이직, 방3 욕실2
+    name = db.Column(db.String(100), nullable=False)
     category_code = db.Column(db.Integer, nullable=True)
     code = db.Column(db.Integer, nullable=True)
-    price = db.Column(db.Integer, nullable=False)     # 평당가 또는 고정가
-    per_pyeong = db.Column(db.Boolean, default=False) # 평당 여부
+    price = db.Column(db.Integer, nullable=False)
+    per_pyeong = db.Column(db.Boolean, default=False)
+    discounted_price = db.Column(db.Integer, nullable=True)
     
 
     service = db.relationship('Service', back_populates='options')
     
     estimate_items = db.relationship('EstimateItem', back_populates='service_option')
+    
+class Discount(db.Model):
+    __tablename__ = 'discounts'
+
+    id = db.Column(db.Integer, primary_key=True)
+    service_id = db.Column(db.Text, db.ForeignKey('services.id'), nullable=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    code = db.Column(db.String(3), nullable=True)
+    discount_id = db.Column(db.Integer, nullable=True)
+    amount = db.Column(db.Integer, nullable=False)
+    per_pyeong = db.Column(db.Boolean, default=False) 
+    
+    service = db.relationship('Service', back_populates='discounts')
+    
+    # estimate_items = db.relationship('EstimateItem', back_populates='service_option')
     
 class Estimate(db.Model):
     __tablename__ = 'estimates'

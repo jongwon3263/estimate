@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <form id="priceForm">
+                
+                {% include "estimate/components/0_customer_info.html" %}
+                {% include "estimate/components/0_service_selector.html" %}
+                {% include "estimate/components/1_cleaning.html" %}
+                {% include "estimate/components/2_grouting.html" %}
+                {% include "estimate/components/3_kerapoxy.html" %}
+                {% include "estimate/components/6_newhouse_solution.html" %}
+                {% include "estimate/components/7_floor_coating.html" %}
+                {% include "estimate/components/4_painting.html" %}
+                {% include "estimate/components/5_coating.html" %}
+                {% include "estimate/components/8_appliances.html" %}
+                
+            </form>
+        </div>
+        <div class="col">
+            <div id="discountDiv">
+            </div>
+            <div id="beforeDiscount" class="totalPriceResult"></div><br><br><br>
+            <div class="discountContainer">
+                <div id="discount1" class="discount"></div><br>
+                <div id="discount2" class="discount"></div><br>
+                <div id="discount3" class="discount"></div><br>
+                <div class="discount">
+                    <label style="font-size:20px;">사용자 입력 할인</label>
+                    <input type="number" id="discountInput"><span class="discountUnit">원</span>
+                </div><br>
+                <!--줄눈 패키지-->
+                <div id="packageGR1" class="discount" ></div>
+                <div id="packageGR2" class="discount" ></div>
+                <div id="packageGR3" class="discount" ></div>
+                <div id="packageGR_description" class="discount" ></div>
+            </div>
+            <!-- <div id="discountAmount" class="totalPriceResult"></div> -->
+            <div id="totalPriceResultFinal" class="totalPriceResult"></div>
+
+        <!-- <button type="button" id="saveEstimate">견적 정보 저장</button> -->
+        </div>
+    </div>
+</div>
+
+
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+<script src="https://unpkg.com/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/estimate.js') }}"></script>
+{% endblock %}

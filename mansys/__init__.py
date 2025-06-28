@@ -5,6 +5,7 @@ from flask_migrate import Migrate
 from sqlalchemy import MetaData
 from dotenv import load_dotenv
 
+
 # .env 로드
 load_dotenv()
 
@@ -47,7 +48,7 @@ def create_app():
     app.jinja_env.filters["format_currency"] = format_currency
 
     # 블루프린트 등록
-    from .views import input_view, company_view, site_view, work_view, service_view, estimate_view, calendar_view, estimate_api
+    from .views import input_view, company_view, site_view, work_view, service_view, estimate_view, calendar_view, service_api
     app.register_blueprint(input_view.bp)
     app.register_blueprint(company_view.bp)
     app.register_blueprint(site_view.bp)
@@ -55,6 +56,7 @@ def create_app():
     app.register_blueprint(service_view.bp)
     app.register_blueprint(estimate_view.bp)
     app.register_blueprint(calendar_view.bp)
-    app.register_blueprint(estimate_api.bp)
+    app.register_blueprint(service_api.bp)
+
 
     return app
