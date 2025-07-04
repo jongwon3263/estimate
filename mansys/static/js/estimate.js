@@ -1,14 +1,14 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const roomTypeSelect = document.getElementById('selectRoomType');
-    const selectedRoomTypeId = roomTypeSelect.value;
-    const inputPyeongDiv = document.getElementById('inputPyeong');
-    const smallTypeDiv = document.getElementById('smallType');
-    const pyeong = document.getElementById('pyeong');
-    const pyeongValue = parseFloat(document.getElementById('pyeong').value) || 0;
-    function getPyeongValue() {
-        return parseFloat(document.getElementById('pyeong').value) || 0;
-    }
-    const smallRoomTypeSelector = document.getElementById('smallRoomTypeSelector');
+    // const roomTypeSelect = document.getElementById('selectRoomType');
+    // const selectedRoomTypeId = roomTypeSelect.value;
+    // const inputPyeongDiv = document.getElementById('inputPyeong');
+    // const smallTypeDiv = document.getElementById('smallType');
+    // const pyeong = document.getElementById('pyeong');
+    // const pyeongValue = parseFloat(document.getElementById('pyeong').value) || 0;
+    // function getPyeongValue() {
+    //     return parseFloat(document.getElementById('pyeong').value) || 0;
+    // }
+    // const smallRoomTypeSelector = document.getElementById('smallRoomTypeSelector');
 
     //시공 선택 컨테이너
     const serviceSelector = document.getElementById('serviceSelector');
@@ -99,6 +99,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const ct_9_2 = document.getElementById('ct_9_2'); //스탠다드
     const ct_9_3 = document.getElementById('ct_9_3'); //프리미엄
 
+    // 줄눈
     let isPackageGR1 = false;
     let isPackageGR2 = false;
     let isPackageGR3 = false;
@@ -113,10 +114,12 @@ document.addEventListener('DOMContentLoaded', function () {
     let isPackageCT2 = false;
     let isPackageCT3 = false;
     let isPackageCT = false;
-    
-    const packageGR1 = document.getElementById('packageGR1');
-    const packageGR2 = document.getElementById('packageGR2');
-    const packageGR3 = document.getElementById('packageGR3');
+
+    //기타
+    const del = document.createElement('del');
+    const br = document.createElement('br');
+    const arrow = document.createTextNode(' → ');
+    const strong = document.createElement('strong');
 
 
     //체크박스 체크 여부에 따른 옆 체크박스 비활성화
@@ -264,10 +267,10 @@ document.addEventListener('DOMContentLoaded', function () {
         } else if (roomTypeSelect.value === 'smallType') {
             const selectedOption = smallRoomTypeSelector.options[smallRoomTypeSelector.selectedIndex];
             if (selectedOption && selectedOption.value !== "") {
-                const parts = selectedOption.id.split('_'); 
-                const serviceId = parts[0];          
-                const categoryCode = parts[1];    
-                const optionCode = parts[2];      
+                const parts = selectedOption.id.split('_');
+                const serviceId = parts[0];
+                const categoryCode = parts[1];
+                const optionCode = parts[2];
                 console.log(serviceId, categoryCode, optionCode);
 
                 fetch(`/api/get_price?service_id=CL&category_code=${categoryCode}&option_code=${optionCode}`)
@@ -442,7 +445,11 @@ document.addEventListener('DOMContentLoaded', function () {
         console.warn('❗️checkGrouting 또는 grouting-container 요소를 찾지 못했습니다.');
     }
     //패키지 박스
-    const gr_package_checkboxs = document.querySelectorAll('.gr_package_checkbox');
+    const gr_package_checkboxs = Array.from(document.querySelectorAll('.gr_checkbox')).filter(el => {
+        return el.id.startsWith('gr_9_');
+    });
+
+    // console.log('패키지 체크박스:', gr_package_checkboxs);
 
     gr_package_checkboxs.forEach(checkbox => {
         checkbox.addEventListener('change', function () {
@@ -538,14 +545,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // ✅ 각 항목별 가격 계산
         for (const checkbox of grCheckboxes) {
+            const parts = checkbox.id.split('_');
+            const serviceId = parts[0];
+            const serviceIdUpper = serviceId.toUpperCase();
+            const categoryCode = parts[1];
+            const optionCode = parts[2];
+            const priceSpan = document.getElementById(`price_${checkbox.id}`);
+            console.log(checkbox.id);
+            
             if (checkbox.checked) {
-                const parts = checkbox.id.split('_');
-                const serviceId = parts[0];
-                const serviceIdUpper = serviceId.toUpperCase();
-                const categoryCode = parts[1];
-                const optionCode = parts[2];
-                console.log(checkbox.id);
-
                 // ✅ 패키지가 선택되었고, 이 항목이 패키지에 포함된 항목이면 무시
                 if (isPackageGR) {
                     // 예: 스탠다드 패키지 선택 시 gr_1_2 + gr_2_3 체크됨
@@ -564,35 +572,71 @@ document.addEventListener('DOMContentLoaded', function () {
                     const response = await fetch (`/api/get_price?service_id=${serviceIdUpper}&category_code=${categoryCode}&option_code=${optionCode}`);
                     const data = await response.json();
                     if (data.success) {
-                        const floorGroutingSelected = checkbox.id == 'gr_1_7' || checkbox.id == 'gr_1_8';
-                        if (isPackageGR) {
-                            const discounted = data.discounted_price ?? 0;
-                            const price = discounted > 0 ? discounted : data.price;
+                        // 바닥 줄눈 선택
+                        const floorGroutingSelected = checkbox.id === 'gr_1_7' || checkbox.id === 'gr_1_8';
 
-                            if (floorGroutingSelected) {
-                                floorTotal += price * getPyeongValue();
-                            } else if (categoryCode == '1') {
-                                floorTotal += price;
-                            } else if (categoryCode == '2') {
-                                wallTotal += price;
-                            } else if (categoryCode == '3') {
-                                siliconeTotal += price;
+                        const originalPrice = data.price;
+                        const discountedPrice = data.discounted_price ?? 0;
+                        const pyeong = getPyeongValue();
+
+                        // 실제 적용되는 가격
+                        const appliedPrice = isPackageGR && discountedPrice > 0 ? discountedPrice : originalPrice;
+
+                        // 가격 표시: 항상 존재하는 요소라고 가정
+                        priceSpan.textContent = '';
+
+
+                        if (floorGroutingSelected) {
+                            const originalTotal = originalPrice * pyeong;
+                            const discountedTotal = discountedPrice * pyeong;
+
+                            if (isPackageGR && discountedPrice > 0) {
+
+                                del.textContent = `${originalTotal.toLocaleString()}원`;
+                                strong.textContent = `${discountedTotal.toLocaleString()}원`;
+
+                                priceSpan.appendChild(del);
+                                priceSpan.appendChild(br);
+                                priceSpan.appendChild(arrow);
+                                priceSpan.appendChild(strong);
+                            } else {
+                                priceSpan.textContent = `${originalTotal.toLocaleString()}원`;
                             }
+
+                            floorTotal += appliedPrice * pyeong; // 바닥 줄눈 가격 합산
+
                         } else {
-                            if (floorGroutingSelected) {
-                                floorTotal += data.price * getPyeongValue();
-                            } else if (categoryCode == '1') {
-                                floorTotal += data.price;
+                            if (isPackageGR && discountedPrice > 0) {
+
+                                del.textContent = `${originalPrice.toLocaleString()}원`;
+                                strong.textContent = `${discountedPrice.toLocaleString()}원`;
+
+                                priceSpan.appendChild(del);
+                                priceSpan.appendChild(br);
+                                priceSpan.appendChild(arrow);
+                                priceSpan.appendChild(strong);
+                            } else {
+                                priceSpan.textContent = `${originalPrice.toLocaleString()}원`;
+                            }
+                            // 가격 합산
+                            if (categoryCode == '1') {
+                                floorTotal += appliedPrice;
                             } else if (categoryCode == '2') {
-                                wallTotal += data.price;
+                                wallTotal += appliedPrice;
                             } else if (categoryCode == '3') {
-                                siliconeTotal += data.price;
+                                siliconeTotal += appliedPrice;
                             }
                         }
-
                     }
+
                 } catch (error) {
                     console.error(`가격 요청 실패 ${checkbox.id}`, error);
+                }
+            }  else {
+                // ✅ 체크 해제 시 가격 초기화
+                if (priceSpan) {
+                    priceSpan.textContent = '';
+                    final();
                 }
             }
         }
@@ -600,10 +644,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const groutTotal = floorTotal + wallTotal + siliconeTotal + packagePrice;
         
         
-        groutPriceFloor.textContent = floorTotal > 0 ? `${floorTotal.toLocaleString()}원` : '0원';
-        groutPriceWall.textContent = wallTotal > 0 ? `${wallTotal.toLocaleString()}원` : '0원';
-        groutPriceSilicone.textContent = siliconeTotal > 0 ? `${siliconeTotal.toLocaleString()}원` : '0원';
-        groutPriceTotal.textContent = groutTotal > 0 ? `토탈 ${groutTotal.toLocaleString()}원` : '0원';
+        // groutPriceFloor.textContent = floorTotal > 0 ? `${floorTotal.toLocaleString()}원` : '0원';
+        // groutPriceWall.textContent = wallTotal > 0 ? `${wallTotal.toLocaleString()}원` : '0원';
+        // groutPriceSilicone.textContent = siliconeTotal > 0 ? `${siliconeTotal.toLocaleString()}원` : '0원';
+        groutPriceTotal.textContent = groutTotal > 0 ? `총 ${groutTotal.toLocaleString()}원` : '0원';
         final();
     }
 
@@ -624,7 +668,10 @@ document.addEventListener('DOMContentLoaded', function () {
         console.warn('checkKera 또는 kera-container 요소를 찾지 못했습니다.');
     }
     //패키지 박스
-    const kp_package_checkbox = document.querySelectorAll('.kp_package_checkbox');
+    const kp_package_checkbox = Array.from(document.querySelectorAll('.kp_checkbox')).filter(el => {
+        return el.id.startsWith('kp_9_');
+    });
+    // console.log('패키지 체크박스:', kp_package_checkbox);
 
     kp_package_checkbox.forEach(checkbox => {
         checkbox.addEventListener('change', function () {
@@ -695,9 +742,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     async function updateKeraPrice() {
 
-        isPackageKP1 = (kp_1_1.checked && kp_1_3.checked && !kp_2_3.checked && !kp_2_2.checked) || kp_9_1.checked; //베이직
-        isPackageKP2 = (kp_1_1.checked && kp_1_3.checked && kp_2_3.checked) || kp_9_2.checked; //스탠다드
-        isPackageKP3 = (kp_1_1.checked && kp_1_3.checked && kp_2_2.checked) || kp_9_3.checked; //프리미엄
+        isPackageKP1 = kp_1_1.checked && kp_1_3.checked && !kp_2_3.checked && !kp_2_2.checked//베이직
+        isPackageKP2 = kp_1_1.checked && kp_1_3.checked && kp_2_3.checked//스탠다드
+        isPackageKP3 = kp_1_1.checked && kp_1_3.checked && kp_2_2.checked//프리미엄
         isPackageKP = isPackageKP1 || isPackageKP2 || isPackageKP3;
 
         let floorTotal = 0;
@@ -737,6 +784,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const serviceIdUpper = parts[0].toUpperCase();
                 const categoryCode = parts[1];
                 const optionCode = parts[2];
+                const priceSpan = document.getElementById(`price_${checkbox.id}`);
 
                 // ✅ 항목 중복 방지: 패키지에 포함된 항목은 계산에서 제외
                 if (isPackageKP) {
@@ -754,40 +802,69 @@ document.addEventListener('DOMContentLoaded', function () {
                     const response = await fetch (`/api/get_price?service_id=${serviceIdUpper}&category_code=${categoryCode}&option_code=${optionCode}`);
                     const data = await response.json();
                     if (data.success) {
-                        const floorKeraSelected = checkbox.id == 'kp_1_8' || checkbox.id == 'kp_1_9';
-                        if (isPackageKP) {
-                            const discounted = data.discounted_price ?? 0;
-                            const price = discounted > 0 ? discounted : data.price;
+                        // 바닥 케라 선택
+                        const floorKeraSelected = checkbox.id === 'kp_1_8' || checkbox.id === 'kp_1_9';
 
-                            if (floorKeraSelected) {
-                                floorTotal += price * pyeong;
-                            } else if (categoryCode == '1') {
-                                floorTotal += price;
-                            } else if (categoryCode == '2') {
-                                wallTotal += price;
+                        const originalPrice = data.price;
+                        const discountedPrice = data.discounted_price ?? 0;
+                        const pyeong = getPyeongValue();
+
+                        // 실제 적용되는 가격
+                        const appliedPrice = isPackageKP && discountedPrice > 0 ? discountedPrice : originalPrice;
+
+                        // 가격 표시: 항상 존재하는 요소라고 가정
+                        priceSpan.textContent = '';
+                        priceSpan.dataset.calculatedPrice = floorKeraSelected
+                            ? (appliedPrice * pyeong).toString()
+                            : appliedPrice.toString();
+
+                        if (floorKeraSelected) {
+                            // 할인 전 금액 * 평
+                            const originalTotal = originalPrice * pyeong;
+                            // 할인 후 금액 * 평
+                            const discountedTotal = discountedPrice * pyeong;
+                            
+                            if (isPackageKP && discountedPrice > 0) {
+                                del.textContent = `${originalTotal.toLocaleString()}원`;
+                                strong.textContent = `${discountedTotal.toLocaleString()}원`;
+
+                                priceSpan.appendChild(del);
+                                priceSpan.appendChild(br);
+                                priceSpan.appendChild(arrow);
+                                priceSpan.appendChild(strong);
+                            } else {
+                                priceSpan.textContent = `${originalTotal.toLocaleString()}원`;
                             }
                         } else {
-                            if (floorKeraSelected) {
-                                floorTotal += data.price * pyeong;
-                            } else if (categoryCode == '1') {
-                                floorTotal += data.price;
+                            if (isPackageKP && discountedPrice > 0) {
+                                del.textContent = `${originalPrice.toLocaleString()}원`;
+                                strong.textContent = `${discountedPrice.toLocaleString()}원`;
+
+                                priceSpan.appendChild(del);
+                                priceSpan.appendChild(br);
+                                priceSpan.appendChild(arrow);
+                                priceSpan.appendChild(strong);
+                            } else {
+                                priceSpan.textContent = `${originalPrice.toLocaleString()}원`;
+                            }
+                            // 가격 합산
+                            if (categoryCode == '1') {
+                                floorTotal += appliedPrice;
                             } else if (categoryCode == '2') {
-                                wallTotal += data.price;
+                                wallTotal += appliedPrice;
                             }
                         }
-
-                        // const price = (checkbox.id === `${serviceId}_1_7` || checkbox.id === `${serviceId}_1_8`)
-                        //     ? data.price * pyeong
-                        //     : data.price;
-                        // if (categoryCode == '1') {
-                        //     floorTotal += price;
-                        // } else if (categoryCode == '2') {
-                        //     wallTotal += price;
-                        // }
-
                     }
+
                 } catch (error) {
                     console.error(`가격 요청 실패 ${checkbox.id}`, error);
+                }
+            } else {
+                // ✅ 체크 해제 시 가격 초기화
+                const priceSpan = document.getElementById(`price_${checkbox.id}`);
+                if (priceSpan) {
+                    priceSpan.textContent = '';
+                    final();
                 }
             }
         }
@@ -795,14 +872,13 @@ document.addEventListener('DOMContentLoaded', function () {
         const keraTotal = floorTotal + wallTotal + packagePrice;
         
         
-        keraPriceFloor.textContent = floorTotal > 0 ? `${floorTotal.toLocaleString()}원` : '0원';
-        keraPriceWall.textContent = wallTotal > 0 ? `${wallTotal.toLocaleString()}원` : '0원';
-        keraPriceTotal.textContent = keraTotal > 0 ? `토탈 ${keraTotal.toLocaleString()}원` : '0원';
+        // keraPriceFloor.textContent = floorTotal > 0 ? `${floorTotal.toLocaleString()}원` : '0원';
+        // keraPriceWall.textContent = wallTotal > 0 ? `${wallTotal.toLocaleString()}원` : '0원';
+        keraPriceTotal.textContent = keraTotal > 0 ? `총 ${keraTotal.toLocaleString()}원` : '0원';
         final();
     }
 
     //생활코팅
-    
     checkCoating.addEventListener('change', function(event){
         const isChecked = event.target.checked;
         if (isChecked) {
@@ -813,7 +889,10 @@ document.addEventListener('DOMContentLoaded', function () {
     })
 
     //패키지 박스
-    const ct_package_checkbox = document.querySelectorAll('.ct_package_checkbox');
+    const ct_package_checkbox = Array.from(document.querySelectorAll('.ct_checkbox')).filter(el => {
+        return el.id.startsWith('ct_9_');
+    });
+    // console.log('패키지 체크박스:', ct_package_checkbox);
 
     ct_package_checkbox.forEach(checkbox => {
         checkbox.addEventListener('change', function () {
@@ -884,7 +963,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     async function updateCoatingPrice() {
-
+        const pyeong = getPyeongValue();
         isPackageCT1 = (ct_2_2.checked && ct_3_2.checked && !ct_4_2.checked && !ct_4_4.checked) || ct_9_1.checked; //베이직
         isPackageCT2 = (ct_2_2.checked && ct_3_2.checked && ct_4_2.checked) || ct_9_2.checked; //스탠다드
         isPackageCT3 = (ct_2_2.checked && ct_3_2.checked && ct_4_4.checked) || ct_9_3.checked; //프리미엄
@@ -923,12 +1002,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         for (const checkbox of ctCheckboxes) {
+            const parts = checkbox.id.split('_');
+            const serviceId = parts[0];
+            const serviceIdUpper = serviceId.toUpperCase();
+            const categoryCode = parts[1];
+            const optionCode = parts[2];
+            const priceSpan = document.getElementById(`price_${checkbox.id}`);
+            
             if (checkbox.checked) {
-                const parts = checkbox.id.split('_');
-                const serviceId = parts[0];
-                const serviceIdUpper = serviceId.toUpperCase();
-                const categoryCode = parts[1];
-                const optionCode = parts[2];
                 console.log(serviceIdUpper, categoryCode, optionCode);
 
                 // 패키지에 포함된 항목은 계산에서 제외
@@ -948,40 +1029,73 @@ document.addEventListener('DOMContentLoaded', function () {
                     const response = await fetch (url);
                     console.log('요청 URL:', url);
                     const data = await response.json();
+
                     if (data.success) {
                         const floorCoatingSelected = checkbox.id == 'ct_3_3';
-                        if (isPackageCT) {
-                            const discounted = data.discounted_price ?? 0;
-                            const price = discounted > 0 ? discounted : data.price;
 
-                            if (categoryCode == '1') {
-                                countertopTotal += price;
-                            } else if (categoryCode == '2') {
-                                nanoTotal += price;
-                            } else if (categoryCode == '4') {
-                                wallTileTotal += price;
-                            } else if (floorCoatingSelected) {
-                                floorTileTotal += price * getPyeongValue();
+                        const originalPrice = data.price;
+                        const discountedPrice = data.discounted_price ?? 0;
+
+                        // 실제 적용되는 가격
+                        const appliedPrice = isPackageCT && discountedPrice > 0 ? discountedPrice : originalPrice;
+                        // 가격 표시: 항상 존재하는 요소라고 가정
+                        priceSpan.textContent = '';
+                        priceSpan.dataset.calculatedPrice = floorCoatingSelected
+                            ? (appliedPrice * pyeong).toString()
+                            : appliedPrice.toString();
+
+                        if (floorCoatingSelected) {
+                            const originalTotal = originalPrice * pyeong;
+                            const discountedTotal = discountedPrice * pyeong;
+
+                            if (isPackageCT && discountedPrice > 0) {
+
+                                del.textContent = `${originalTotal.toLocaleString()}원`;
+                                strong.textContent = `${discountedTotal.toLocaleString()}원`;
+
+                                priceSpan.appendChild(del);
+                                priceSpan.appendChild(br);
+                                priceSpan.appendChild(arrow);
+                                priceSpan.appendChild(strong);
                             } else {
-                                floorTileTotal += price;
+                                priceSpan.textContent = `${originalTotal.toLocaleString()}원`;
                             }
+
+                            floorTileTotal += appliedPrice * pyeong; // 바닥 타일 코팅 가격 합산
+
                         } else {
-                            if (categoryCode == '1') {
-                                countertopTotal += data.price;
-                            } else if (categoryCode == '2') {
-                                nanoTotal += data.price;
-                            } else if (categoryCode == '4') {
-                                wallTileTotal += data.price;
-                            } else if (floorCoatingSelected) {
-                                floorTileTotal += data.price * getPyeongValue();
+                            if (isPackageCT && discountedPrice > 0) {
+
+                                del.textContent = `${originalPrice.toLocaleString()}원`;
+                                strong.textContent = `${discountedPrice.toLocaleString()}원`;
+
+                                priceSpan.appendChild(del);
+                                priceSpan.appendChild(br);
+                                priceSpan.appendChild(arrow);
+                                priceSpan.appendChild(strong);
                             } else {
-                                floorTileTotal += data.price;
+                                priceSpan.textContent = `${originalPrice.toLocaleString()}원`;
+                            }
+                            // 가격 합산
+                            if (categoryCode == '1') {
+                                countertopTotal += appliedPrice;
+                            } else if (categoryCode == '2') {
+                                nanoTotal += appliedPrice;
+                            } else if (categoryCode == '3') {
+                                wallTileTotal += appliedPrice;
+                            } else if (categoryCode == '4') {
+                                floorTileTotal += appliedPrice;
                             }
                         }
-
                     }
                 } catch (error) {
                     console.error(`가격 요청 실패 ${checkbox.id}`, error);
+                }
+            }  else {
+                // ✅ 체크 해제 시 가격 초기화
+                if (priceSpan) {
+                    priceSpan.textContent = '';
+                    final();
                 }
             }
         }
@@ -989,11 +1103,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const coatingTotal = countertopTotal + nanoTotal + floorTileTotal + wallTileTotal + packagePrice;
         
         
-        coatingPriceCountertop.textContent = countertopTotal > 0 ? `${countertopTotal.toLocaleString()}원` : '0원';
-        coatingPriceNano.textContent = nanoTotal > 0 ? `${nanoTotal.toLocaleString()}원` : '0원';
-        coatingPriceFloorTile.textContent = floorTileTotal > 0 ? `${floorTileTotal.toLocaleString()}원` : '0원';
-        coatingPriceWallTile.textContent = wallTileTotal > 0 ? `${wallTileTotal.toLocaleString()}원` : '0원';
-        coatingPriceTotal.textContent = coatingTotal > 0 ? `토탈 ${coatingTotal.toLocaleString()}원` : '0원';
+        // coatingPriceCountertop.textContent = countertopTotal > 0 ? `${countertopTotal.toLocaleString()}원` : '0원';
+        // coatingPriceNano.textContent = nanoTotal > 0 ? `${nanoTotal.toLocaleString()}원` : '0원';
+        // coatingPriceFloorTile.textContent = floorTileTotal > 0 ? `${floorTileTotal.toLocaleString()}원` : '0원';
+        // coatingPriceWallTile.textContent = wallTileTotal > 0 ? `${wallTileTotal.toLocaleString()}원` : '0원';
+        coatingPriceTotal.textContent = coatingTotal > 0 ? `총 ${coatingTotal.toLocaleString()}원` : '0원';
         final();
     }
 
@@ -1008,6 +1122,7 @@ document.addEventListener('DOMContentLoaded', function () {
             paintContainer.classList.remove('hide');
         } else {
             paintPrice.textContent = '';
+            final();
             paintContainer.classList.add('hide');
         }
     })
@@ -1065,6 +1180,7 @@ document.addEventListener('DOMContentLoaded', function () {
             floorCoatingContainer.classList.remove('hide');
         } else {
             floorCoatingPrice.textContent = '';
+            final();
             floorCoatingContainer.classList.add('hide');
         }
     })
@@ -1124,6 +1240,7 @@ document.addEventListener('DOMContentLoaded', function () {
             airconPrice.textContent = '';
             washingmachinePrice.textContent = '';
             apPrice.textContent = '';
+            final();
             document.getElementById('appliances-container').classList.add('hide');
         }
     })
@@ -1208,7 +1325,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (checkCleaning.checked && checkNewhouse.checked) {
             const pyeong = getPyeongValue();
             discount1Amount = Math.floor(pyeong) * 1000;
-            discountDiv1.textContent = `할인 1번_청소와 함께라면: -${discount1Amount.toLocaleString()}원`;
+            discountDiv1.textContent = `청소와 함께라면: -${discount1Amount.toLocaleString()}원`;
         } else {
             discountDiv1.textContent = '';
         }
@@ -1220,7 +1337,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const millionUnit = Math.floor(afterDiscount1 / 1000000);
             const discountRate = Math.min(millionUnit, 10) * 0.01;
             discount2Amount = Math.floor(afterDiscount1 * discountRate);
-            discountDiv2.textContent = `할인 2번_골라담아 다다익선: -${discount2Amount.toLocaleString()}원`;
+            discountDiv2.textContent = `골라담아 다다익선: -${discount2Amount.toLocaleString()}원`;
         } else {
             discount2Amount = 0;
             discountDiv2.textContent = '';
@@ -1240,4 +1357,95 @@ document.addEventListener('DOMContentLoaded', function () {
         totalPriceResultFinal.textContent = `최종 합계: ${totalPrice.toLocaleString()}원`;
     }
     discountInput.addEventListener('input', final);
+
+    //견적서 저장
+    document.getElementById('saveEstimate').addEventListener('click', function() {
+        // 1. 고객 정보 수집
+        const customerName = document.getElementById('customerName').value || '';
+        const customerPhone = document.getElementById('customerPhone').value || '';
+        const address = document.getElementById('address').value || '';
+        const roomType = document.getElementById('selectRoomType').value || '';
+        const pyeong = document.getElementById('pyeong')?.value || null;
+        const smallRoomType = document.getElementById('smallRoomTypeSelector')?.value || null;
+        const totalPrice = parseInt(document.getElementById('totalPriceResultFinal').textContent.replace(/[^0-9]/g, '')) || 0;
+
+        // 2. 서비스 항목 수집
+        // 2.1 체크박스 기반 서비스 수집(줄눈, 케라, 코팅)
+        const items = [];
+        document.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
+            const idParts = checkbox.id.split('_');
+            if (idParts.length !== 3) return;  // ✅ checkCleaning, checkGrouting 등은 무시
+
+            const [service_id, category_code_str, option_code_str] = idParts;
+            const category_code = parseInt(category_code_str);
+            const option_code = parseInt(option_code_str);
+            const service_option_id = parseInt(checkbox.value);  // DB에 저장될 ID
+
+            const priceSpan = document.getElementById(`price_${checkbox.id}`);
+            const price = parseInt(priceSpan?.dataset.calculatedPrice || '0');
+
+            // 날짜 입력 필드 추출 (data-service-id는 service_option_id 기준)
+            const start_date = document.querySelector(`.start-date[data-service-id="${checkbox.value}"]`)?.value || null;
+            const end_date = document.querySelector(`.end-date[data-service-id="${checkbox.value}"]`)?.value || null;
+
+            // 금액 추출 (예: <span id="price_gr_9_1">70,000원</span>)
+            // const price_text = document.getElementById(`price_${checkbox.id}`)?.textContent || '0';
+            // const price = parseInt(price_text.replace(/[^0-9]/g, ''));
+            items.push({
+                service_id,
+                category_code,
+                option_code,
+                service_option_id,
+                start_date,
+                end_date,
+                price
+            })
+        });
+
+        //2.2 입주청소, 새집증후군 수집
+        if (checkCleaning && checkCleaning.checked) {
+            if(roomType === 'normalType') {
+                
+            } else if (roomType === 'smallType') {
+
+            }
+        }
+
+        // 3. 전체 데이터 묶기
+        const data = {
+            customerName,
+            customerPhone,
+            address,
+            roomType,
+            // pyeong은 선택적이므로 null 처리
+            pyeong: pyeong ? parseFloat(pyeong) : null,
+            smallRoomType,
+            totalPrice,
+            items
+        }
+
+        // 4. 서버로 POST 요청
+        fetch('/estimate/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert('견적서가 성공적으로 저장되었습니다.');
+                // 저장 후 페이지 새로고침
+                window.location.reload();
+            } else {
+                console.error('❗️서버 응답 오류:', result.message);  // 콘솔 출력 추가
+                alert('견적서 저장에 실패했습니다: ' + result.message);
+            }
+        })
+        .catch(error => {
+            console.error('에러 발생:', error);
+            alert('저장 중 에러가 발생했습니다.');
+        });
+    });
 });

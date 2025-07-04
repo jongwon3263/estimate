@@ -1,0 +1,27 @@
+{% macro date_range_inputs(start_id='startDate', end_id='endDate', service_option_id=None) %}
+<div class="detail-option">
+    <span>시작</span>
+    <input type="date" id="{{ start_id }}" data-service-id="{{ service_option_id }}">
+    <span>종료</span>
+    <input type="date" id="{{ end_id }}" data-service-id="{{ service_option_id }}">
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const startInput = document.getElementById('{{ start_id }}');
+        const endInput = document.getElementById('{{ end_id }}');
+
+        const today = new Date().toISOString().split('T')[0];
+        if (startInput) startInput.min = today;
+
+        if (startInput && endInput) {
+            startInput.addEventListener('change', function () {
+                endInput.min = this.value;
+                if (endInput.value && endInput.value < this.value) {
+                    endInput.value = this.value;
+                }
+            });
+        }
+    });
+</script>
+{% endmacro %}

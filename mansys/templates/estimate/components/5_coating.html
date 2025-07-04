@@ -2,72 +2,58 @@
     <h2>생활코팅</h2>
         <div class="individual-container">
             <h5>패키지</h5>
-            <label for="ct_9_1">
-            <input class="ct_package_checkbox" type="checkbox" id="ct_9_1" name="">베이직</label><br>
-            <label for="ct_9_2">
-            <input class="ct_package_checkbox" type="checkbox" id="ct_9_2" name="">스탠다드</label><br>
-            <label for="ct_9_3">
-            <input class="ct_package_checkbox" type="checkbox" id="ct_9_3" name="">프리미엄</label><br>
+                {% for item in coating_package_items %}
+                    <label for="ct_{{ item.category_code }}_{{ item.code }}">
+                        <input class="ct_checkbox" type="checkbox" id="ct_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                        {{ item.name }}
+                        <span class="price-label" id="price_ct_{{ item.category_code }}_{{ item.code }}"></span>
+                    </label><br>
+                {% endfor %}
         </div>
         <div id="coatingCountertop" class="detail-option">
             <h3>주방 상판코팅</h3>
-            <label for="ct_1_1">
-            <input class="ct_checkbox" type="checkbox" id="ct_1_1" name="" value="51">인조대리석</label><br>
-            <label for="ct_1_2">
-            <input class="ct_checkbox" type="checkbox" id="ct_1_2" name="" value="66">엔지니어드 스톤</label><br>
-            <div class="priceResult" id="coatingPriceCountertop"></div>
+                {% for item in coating_countertop_items %}
+                    <label for="ct_{{ item.category_code }}_{{ item.code }}">
+                        <input class="ct_checkbox" type="checkbox" id="ct_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                        {{ item.name }}
+                        <span class="price-label" id="price_ct_{{ item.category_code }}_{{ item.code }}"></span>
+                    </label><br>
+                {% endfor %}
         </div>
-
         <div id="coatingNano" class="detail-option">
             <h3>욕실 나노코팅</h3>
-                <label for="ct_2_1">
-                    <input class="ct_checkbox" type="checkbox" id="ct_2_1" name="nanoCoating" value="52">
-                    욕실 1개소
-                </label>
-                <label for="ct_2_2">
-                    <input class="ct_checkbox" type="checkbox" id="ct_2_2" name="nanoCoating" value="53">
-                    욕실 2개소
-                </label>
-            <div class="priceResult" id="coatingPriceNano"></div>
+                {% for item in coating_nano_items %}
+                    <label for="ct_{{ item.category_code }}_{{ item.code }}">
+                        <input class="ct_checkbox" type="checkbox" id="ct_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                        {{ item.name }}
+                        <span class="price-label" id="price_ct_{{ item.category_code }}_{{ item.code }}"></span>
+                    </label><br>
+                {% endfor %}
         </div>
 
         <div id="coatingFloorTile" class="detail-option">
             <h3>바닥 타일코팅</h3>
-            <div class="list-group">
-                <label for="ct_3_1">
-                    <input class="ct_checkbox"  type="checkbox" id="ct_3_1" name="floorTile" value="54">
-                    욕실 바닥 1개소
-                </label>
-                <label for="ct_3_2">
-                    <input class="ct_checkbox"  type="checkbox" id="ct_3_2" name="floorTile" value="55">
-                    욕실 바닥 2개소
-                </label>
-                <label for="ct_3_3">
-                    <input class="ct_checkbox"  type="checkbox" id="ct_3_3" name="floorTile" value="56">
-                    거실, 주방, 복도
-                </label>
-            </div>
-            <div class="priceResult" id="coatingPriceFloorTile"></div>
+                {% for item in coating_floortile_items %}
+                    <label for="ct_{{ item.category_code }}_{{ item.code }}">
+                        <input class="ct_checkbox" type="checkbox" id="ct_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                        {{ item.name }}
+                        <span class="price-label" id="price_ct_{{ item.category_code }}_{{ item.code }}"></span>
+                    </label><br>
+                {% endfor %}
         </div>
         <div id="coatingWallTile" class="detail-option">
             <h3>벽 타일코팅</h3>
-                <label for="ct_4_1">
-                    <input class="ct_checkbox" type="checkbox" id="ct_4_1" name="wallTile" value="65">
-                    주방 벽면
-                </label>
-                <label for="ct_4_2">
-                    <input class="ct_checkbox" type="checkbox" id="ct_4_2" name="wallTile" value="57">
-                    욕실 샤워부스 안쪽 벽면
-                </label>
-                <label for="ct_4_3">
-                    <input class="ct_checkbox" type="checkbox" id="ct_4_3" name="wallTile" value="58">
-                    욕실 1개소 벽면 전체
-                </label>
-                <label for="ct_4_4">
-                    <input class="ct_checkbox" type="checkbox" id="ct_4_4" name="wallTile" value="59">
-                    욕실 2개소 벽면 전체
-                </label>
-                <div class="priceResult" id="coatingPriceWallTile"></div>
+                {% for item in coating_walltile_items %}
+                    <label for="ct_{{ item.category_code }}_{{ item.code }}">
+                        <input class="ct_checkbox" type="checkbox" id="ct_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                        {{ item.name }}
+                        <span class="price-label" id="price_ct_{{ item.category_code }}_{{ item.code }}"></span>
+                    </label><br>
+                {% endfor %}
         </div>
+    <!--금액 표시-->
     <div class="priceResult" id="coatingPriceTotal"></div>
+    <!--작업 일정-->
+    {% import "macro/work_date.html" as date_range %}
+    {{ date_range.date_range_inputs(start_id='ct_start', end_id='ct_end') }}
 </div>                

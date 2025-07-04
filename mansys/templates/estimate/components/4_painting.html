@@ -6,5 +6,9 @@
         <option value="63" id="pt_1_2">스탠다드</option>
         <option value="64" id="pt_1_3">프리미엄</option>
     </select><br>
+    <!--금액 표시-->
     <div class="priceResult" id="paintPrice"></div>
+    <!--작업 일정-->
+    {% import "macro/work_date.html" as date_range %}
+    {{ date_range.date_range_inputs(start_id='pt_start', end_id='pt_end') }}
 </div>

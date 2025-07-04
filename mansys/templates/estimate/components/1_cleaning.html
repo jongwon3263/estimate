@@ -1,4 +1,9 @@
 <div id="cleaning-container" class="individual-container hide">
     <h2>입주청소</h2>
+    <!--금액 표시-->
     <div id="cleaningPrice" class="priceContainer"></div>
+    
+    <!--작업 일정-->
+    {% import "macro/work_date.html" as date_range %}
+    {{ date_range.date_range_inputs(start_id='cl_start', end_id='cl_end') }}
 </div>

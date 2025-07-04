@@ -2,20 +2,40 @@
 {% block content %}
 <div class="container my-3">
     <a href="{{ url_for('estimate.create') }}" class="btn btn-primary" style="float: right;">견적서 작성</a>
-    <h2>견적서</h2>
-    <div class="col-6">
+    <h2>견적서 목록</h2>
 
-    </div>
-    <table class="table" style="width:70vw;">
-        <thead>
-            <tr class="table-primary">
-
+    <table class="table table-bordered mt-3" style="width: 100%;">
+        <thead class="table-primary">
+            <tr>
+                <th>ID</th>
+                <th>고객명</th>
+                <th>주소</th>
+                <th>연락처</th>
+                <th>총 금액</th>
+                <th>작성일</th>
+                <th>상세보기</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td colspan="3">작성된 견적서가 없습니다.</td>
-            </tr>
+            {% if estimates %}
+                {% for est in estimates %}
+                <tr>
+                    <td>{{ est.id }}</td>
+                    <td>{{ est.customer }}</td>
+                    <td>{{ est.address }}</td>
+                    <td>{{ est.phone }}</td>
+                    <td>{{ "{:,}".format(est.total_price or 0) }}원</td>
+                    <td>{{ est.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('estimate.detail', estimate_id=est.id) }}" class="btn btn-sm btn-outline-secondary">보기</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center">작성된 견적서가 없습니다.</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 </div>

@@ -9,3 +9,11 @@
 .totalPriceResult, .discount {
     position: fixed;
 }
+
+#totalPriceContainer {
+    position: fixed;
+    top: 100px;             /* 혹은 bottom: 100px */
+    right: 50px;            /* 화면 오른쪽 여백 */
+    z-index: 9999;
+    width: 400px;           /* 적절한 고정 너비 설정 (부모 col 크기에 맞추기) */
+}

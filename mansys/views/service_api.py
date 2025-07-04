@@ -24,29 +24,4 @@ def get_price():
     if not option:
         return jsonify(success=False, error="옵션을 찾을 수 없습니다."), 404
 
-    return jsonify(success=True, price=option.price, category_code=option.category_code, discounted_price=option.discounted_price)
-
-
-# @bp.route('/grouting')
-# def grouting():
-#     # 바닥(category_code = 1)
-#     grout_floor_items = ServiceOption.query.filter_by(
-#         service_id='GR', category_code=1
-#     ).order_by(ServiceOption.code).all()
-
-#     # 벽면(category_code = 2)
-#     grout_wall_items = ServiceOption.query.filter_by(
-#         service_id='GR', category_code=2
-#     ).order_by(ServiceOption.code).all()
-
-#     # 실리콘(category_code = 3)
-#     grout_silicone_items = ServiceOption.query.filter_by(
-#         service_id='GR', category_code=3
-#     ).order_by(ServiceOption.code).all()
-
-#     return render_template(
-#         '2_grouting.html',
-#         grout_floor_items=grout_floor_items,
-#         grout_wall_items=grout_wall_items,
-#         grout_silicone_items=grout_silicone_items
-#     )
+    return jsonify(success=True, price=option.price, category_code=option.category_code, discounted_price=option.discounted_price, service_option_id=option.id)

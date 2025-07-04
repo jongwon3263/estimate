@@ -1,4 +1,9 @@
 <div id="newhouse-container" class="individual-container hide">
     <h2>새집증후군</h2>
+    <!--금액 표시-->
     <div class="priceResult" id="newhousePrice"></div>
+
+    <!--작업 일정-->
+    {% import "macro/work_date.html" as date_range %}
+    {{ date_range.date_range_inputs(start_id='nh_start', end_id='nh_end') }}
 </div>

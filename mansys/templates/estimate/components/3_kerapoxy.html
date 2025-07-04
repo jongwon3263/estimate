@@ -2,56 +2,47 @@
         <h2>케라폭시</h2>
             <div class="individual-container">
                 <h5>패키지</h5>
-                <label for="kp_9_1">
-                <input class="kp_package_checkbox" type="checkbox" id="kp_9_1" name="">베이직</label><br>
-                <label for="kp_9_2">
-                <input class="kp_package_checkbox" type="checkbox" id="kp_9_2" name="">스탠다드</label><br>
-                <label for="kp_9_3">
-                <input class="kp_package_checkbox" type="checkbox" id="kp_9_3" name="">프리미엄</label><br>
+                {% for item in kera_package_items %}
+                    <label for="kp_{{ item.category_code }}_{{ item.code }}">
+                        <input class="kp_checkbox" type="checkbox" id="kp_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                        {{ item.name }}
+                        <span class="price-label" id="price_kp_{{ item.category_code }}_{{ item.code }}"></span>
+                    </label><br>
+                {% endfor %}
             </div>
         <div class="row">
             <div class="col">
                 <div id="keraFloor" class="detail-option">
                     <h3>바닥</h3>
-                        <label for="kp_1_1">
-                        <input class="kp_checkbox" type="checkbox" id="kp_1_1" name="">현관</label><br>
-                        <label for="kp_1_2">
-                        <input class="kp_checkbox" type="checkbox" id="kp_1_2" name="">욕실 1개</label><br>
-                        <label for="kp_1_3">
-                        <input class="kp_checkbox" type="checkbox" id="kp_1_3" name="">욕실 2개</label><br>
-                        <label for="kp_1_4">
-                        <input class="kp_checkbox" type="checkbox" id="kp_1_4" name="">발코니</label><br>
-                        <label for="kp_1_5">
-                        <input class="kp_checkbox" type="checkbox" id="kp_1_5" name="">세탁실</label><br>
-                        <label for="kp_1_6">
-                        <input class="kp_checkbox" type="checkbox" id="kp_1_6" name="">보일러실</label><br>
-                        <label for="kp_1_7">
-                        <input class="kp_checkbox" type="checkbox" id="kp_1_7" name="">대피소</label><br>
-                        <label for="kp_1_8">
-                        <input class="kp_checkbox" type="checkbox" id="kp_1_8" name="">거실, 주방, 복도</label><br>
-                        <label for="kp_1_9">
-                        <input class="kp_checkbox" type="checkbox" id="kp_1_9" name="">거실, 주방, 복도, 방포함</label><br>
-                        <div class="priceResult" id="keraPriceFloor"></div>
+                    {% for item in kera_floor_items %}
+                        {% if item.code not in [10, 11] %} {# 옵션코드 10, 11 제외. 즉 포세린 제외 #}
+                        <label for="kp_{{ item.category_code }}_{{ item.code }}">
+                            <input class="kp_checkbox" type="checkbox" id="kp_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                            {{ item.name }}
+                            <span class="price-label" id="price_kp_{{ item.category_code }}_{{ item.code }}"></span>
+                        </label><br>
+                        {% endif %}
+                    {% endfor %}
+                    <!--<div class="priceResult" id="keraPriceFloor"></div>-->
                 </div>
             </div>
             <div class="col">
                 <div id="keraWall" class="detail-option">
                     <h3>벽면</h3>
-                    <label for="kp_2_1">
-                    <input class="kp_checkbox" type="checkbox" id="kp_2_1" name="">욕실 벽면 전체 1개소</label><br>
-                    <label for="kp_2_2">
-                    <input class="kp_checkbox" type="checkbox" id="kp_2_2" name="">욕실 벽면 전체 2개소</label><br>
-                    <label for="kp_2_3">
-                    <input class="kp_checkbox" type="checkbox" id="kp_2_3" name="">샤워부스 안쪽 벽면</label><br>
-                    <label for="kp_2_4">
-                    <input class="kp_checkbox" type="checkbox" id="kp_2_4" name="">욕조 라인 벽면</label><br>
-                    <label for="kp_2_5">
-                    <input class="kp_checkbox" type="checkbox" id="kp_2_5" name="">주방 벽면</label><br>
-                    <label for="kp_2_6">
-                    <input class="kp_checkbox" type="checkbox" id="kp_2_6" name="">거실 아트월</label><br>
-                    <div class="priceResult" id="keraPriceWall"></div>
+                    {% for item in kera_wall_items %}
+                        <label for="kp_{{ item.category_code }}_{{ item.code }}">
+                            <input class="kp_checkbox" type="checkbox" id="kp_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                            {{ item.name }}
+                            <span class="price-label" id="price_kp_{{ item.category_code }}_{{ item.code }}"></span>
+                        </label><br>
+                    {% endfor %}
+                    <!--<div class="priceResult" id="keraPriceWall"></div>-->
                 </div>
             </div>
-        </div>                   
+        </div>           
+    <!--금액 표시-->
     <div class="priceResult" id="keraPriceTotal"></div>
+    <!--작업 일정-->
+    {% import "macro/work_date.html" as date_range %}
+    {{ date_range.date_range_inputs(start_id='kp_start', end_id='kp_end') }}
 </div>

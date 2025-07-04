@@ -5,5 +5,9 @@
         <option value="60" id="fc_1_1">거실, 주방, 복도</option>
         <option value="61" id="fc_1_2">거실, 주방, 복도, 방 전체</option>
     </select><br>
+    <!--금액 표시-->
     <div class="priceResult" id="floorCoatingPrice"></div>
+    <!--작업 일정-->
+    {% import "macro/work_date.html" as date_range %}
+    {{ date_range.date_range_inputs(start_id='fc_start', end_id='fc_end') }}
 </div>

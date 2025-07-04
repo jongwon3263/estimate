@@ -220,9 +220,17 @@ class Estimate(db.Model):
     customer_phone = db.Column(db.String(20))
     #주소
     address = db.Column(db.String(100))
-    
+    #집 구조
+    room_type = db.Column(db.String(20))  # 예: 'smallType', 'mediumType', 'largeType'
+    #평수
+    pyeong = db.Column(db.Integer)
+    #소형 평수 구조
+    small_room_type = db.Column(db.String(50))
+    #총 금액
     total_price = db.Column(db.Integer, default=0)
+    #견적서 생성 날짜
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    #견적서 상태
     status = db.Column(db.String(20))
     items = db.relationship('EstimateItem', back_populates='estimate', lazy=True, cascade="all, delete-orphan")
     
@@ -232,10 +240,19 @@ class EstimateItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     estimate_id = db.Column(db.Integer, db.ForeignKey('estimates.id'), nullable=False)
     estimate = db.relationship('Estimate', back_populates='items')
+
+    # 날짜
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date)
+
+    # 가격
+    price = db.Column(db.Integer, nullable=False)
+
+    # 서비스 옵션
     service_option_id = db.Column(db.Integer, db.ForeignKey('service_options.id'), nullable=False)
-
-    pyeong = db.Column(db.Float, nullable=True)    # 평당 가격일 경우 사용
-    quantity = db.Column(db.Integer, default=1)    # 보통은 1개, 필요한 경우만 다수
-    price = db.Column(db.Integer, nullable=False)  # 계산된 총 금액
-
     service_option = db.relationship('ServiceOption', back_populates='estimate_items')
+
+    # ✅ 추가: 서비스 고유 코드 구성 요소
+    service_id = db.Column(db.Text, nullable=False)           # 예: 'cl', 'gr', 'co'
+    category_code = db.Column(db.Integer, nullable=False)     # 예: 9
+    option_code = db.Column(db.Integer, nullable=False)       # 예: 1
