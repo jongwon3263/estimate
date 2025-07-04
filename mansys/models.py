@@ -233,6 +233,10 @@ class Estimate(db.Model):
     #견적서 상태
     status = db.Column(db.String(20))
     items = db.relationship('EstimateItem', back_populates='estimate', lazy=True, cascade="all, delete-orphan")
+    #할인
+    discount1 = db.Column(db.Integer, default=0)
+    discount2 = db.Column(db.Integer, default=0)
+    discount3 = db.Column(db.Integer, default=0)
     
 class EstimateItem(db.Model):
     __tablename__ = 'estimate_items'

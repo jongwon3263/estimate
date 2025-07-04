@@ -1,9 +1,9 @@
 {% macro date_range_inputs(start_id='startDate', end_id='endDate', service_option_id=None) %}
 <div class="detail-option">
     <span>시작</span>
-    <input type="date" id="{{ start_id }}" data-service-id="{{ service_option_id }}">
+    <input type="date" class="start-date" id="{{ start_id }}" data-service-id="{{ service_option_id }}">
     <span>종료</span>
-    <input type="date" id="{{ end_id }}" data-service-id="{{ service_option_id }}">
+    <input type="date" class="end-date" id="{{ end_id }}" data-service-id="{{ service_option_id }}">
 </div>
 
 <script>

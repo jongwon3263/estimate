@@ -16,8 +16,12 @@ def index():
 @bp.route('/create/', methods=('GET', 'POST'))
 def create():
     form = EstimateForm()
+    
+    # 청소 서비스 옵션 조회
+    # 소형
+    cleaning_small_items = ServiceOption.query.filter_by(service_id='CL', category_code=2).order_by(ServiceOption.code).all()
 
-    #줄눈 서비스 옵션 조회
+    # 줄눈 서비스 옵션 조회
     grout_package_items = ServiceOption.query.filter_by(service_id='GR', category_code=9).order_by(ServiceOption.code).all()
     grout_floor_items = ServiceOption.query.filter_by(service_id='GR', category_code=1).order_by(ServiceOption.code).all()
     grout_wall_items = ServiceOption.query.filter_by(service_id='GR', category_code=2).order_by(ServiceOption.code).all()
@@ -35,6 +39,16 @@ def create():
     coating_floortile_items = ServiceOption.query.filter_by(service_id='CT', category_code=3).order_by(ServiceOption.code).all()
     coating_walltile_items = ServiceOption.query.filter_by(service_id='CT', category_code=4).order_by(ServiceOption.code).all()
     
+    # 탄성코트 서비스 옵션 조회
+    paint_items = ServiceOption.query.filter_by(service_id='PT', category_code=1).order_by(ServiceOption.code).all()
+    
+    # 마루코팅 서비스 옵션 조회
+    floor_coating_items = ServiceOption.query.filter_by(service_id='FC', category_code=1).order_by(ServiceOption.code).all()
+    
+    #가전분해청소 서비스 옵션 조회
+    ap_ac_items = ServiceOption.query.filter_by(service_id='AP', category_code=1).order_by(ServiceOption.code).all()
+    ap_wm_items = ServiceOption.query.filter_by(service_id='AP', category_code=2).order_by(ServiceOption.code).all()
+    
     
 
     if request.method == 'POST' and form.validate_on_submit():
@@ -50,6 +64,9 @@ def create():
     return render_template(
         'estimate/estimate_form.html',
         form=form,
+        # 청소 데이터 렌더링
+        cleaning_small_items=cleaning_small_items,
+        
         # 줄눈 데이터 렌더링
         grout_floor_items=grout_floor_items,
         grout_wall_items=grout_wall_items,
@@ -66,7 +83,17 @@ def create():
         coating_nano_items=coating_nano_items,
         coating_floortile_items=coating_floortile_items,
         coating_walltile_items=coating_walltile_items,
-        coating_package_items=coating_package_items
+        coating_package_items=coating_package_items,
+        
+        # 탄성코트 데이터 렌더링
+        paint_items=paint_items,
+
+        # 마루코팅 데이터 렌더링
+        floor_coating_items=floor_coating_items,
+        
+        # 가전분해청소 데이터 렌더링
+        ap_ac_items=ap_ac_items,
+        ap_wm_items=ap_wm_items
     )
     
 @bp.route('/save', methods=['POST'])
@@ -83,6 +110,9 @@ def save_estimate():
             pyeong=data.get('pyeong'),
             small_room_type=data.get('smallRoomType'),
             total_price=data.get('totalPrice'),
+            discount1=data.get('discount1', 0),
+            discount2=data.get('discount2', 0),
+            discount3=data.get('discount3', 0),
             status='대기',  # 기본 상태
             created_at=datetime.now(timezone.utc)
         )
@@ -119,3 +149,4 @@ def estimate_list():
 def detail(estimate_id):
     estimate = Estimate.query.get_or_404(estimate_id)
     return render_template('estimate/estimate_detail.html', estimate=estimate)
+

@@ -21,9 +21,9 @@
                 {% for est in estimates %}
                 <tr>
                     <td>{{ est.id }}</td>
-                    <td>{{ est.customer }}</td>
+                    <td>{{ est.customer_name }}</td>
                     <td>{{ est.address }}</td>
-                    <td>{{ est.phone }}</td>
+                    <td>{{ est.customer_phone }}</td>
                     <td>{{ "{:,}".format(est.total_price or 0) }}원</td>
                     <td>{{ est.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>

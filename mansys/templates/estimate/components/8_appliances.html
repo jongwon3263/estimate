@@ -1,45 +1,48 @@
-
 <div id="appliances-container" class="individual-container hide">
     <h2>가전 분해 청소</h2>
-        <div id="inputApPrice">
+
+    <div id="inputApPrice">
+        <div id="airCon">
             <h3>에어컨</h3>
-            <label>
-                <input type="checkbox" id="check_ap_1_1">
-                벽걸이
-                <input type="number" id="price_ap_1_1" placeholder="금액" disabled> 원
-            </label><br>
-            <label>
-                <input type="checkbox" id="check_ap_1_2">
-                스탠드
-                <input type="number" id="price_ap_1_2" placeholder="금액" disabled> 원
-            </label><br>
-            <label>
-                <input type="checkbox" id="check_ap_1_3">
-                시스템
-                <input type="number" id="price_ap_1_3" placeholder="금액" disabled> 원
-            </label><br>
+            {% for item in ap_ac_items %}
+                <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                    <input
+                        class="{{ item.service_id|lower }}_checkbox"
+                        type="checkbox"
+                        id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"
+                        data-service-option-id="{{ item.id }}">
+                    {{ item.name }}
+                    <input type="number"
+                        id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"
+                        placeholder="금액" disabled> 원
+                </label><br>
+            {% endfor %}
             <div class="priceResult" id="apAirconPrice"></div>
+        </div>
+
+        <div id="washingmachine">
             <h3>세탁기</h3>
-            <label>
-                <input type="checkbox" id="check_ap_2_1">
-                통돌이
-                <input type="number" id="price_ap_2_1" placeholder="금액" disabled> 원
-            </label><br>
-            <label>
-                <input type="checkbox" id="check_ap_2_2">
-                빌트인
-                <input type="number" id="price_ap_2_2" placeholder="금액" disabled> 원
-            </label><br>
-            <label>
-                <input type="checkbox" id="check_ap_2_3">
-                드럼
-                <input type="number" id="price_ap_2_3" placeholder="금액" disabled> 원
-            </label><br>
+            {% for item in ap_wm_items %}
+                <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                    <input
+                        class="{{ item.service_id|lower }}_checkbox"
+                        type="checkbox"
+                        id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"
+                        data-service-option-id="{{ item.id }}">
+                    {{ item.name }}
+                    <input type="number"
+                        id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"
+                        placeholder="금액" disabled> 원
+                </label><br>
+            {% endfor %}
             <div class="priceResult" id="apWashingmachinePrice"></div>
         </div>
-    <!--금액 표시-->
+    </div>
+
+    <!-- 금액 표시 -->
     <div class="priceResult" id="apPrice"></div>
-    <!--작업 일정-->
+
+    <!-- 작업 일정 -->
     {% import "macro/work_date.html" as date_range %}
     {{ date_range.date_range_inputs(start_id='ap_start', end_id='ap_end') }}
 </div>

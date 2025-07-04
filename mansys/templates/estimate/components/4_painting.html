@@ -1,10 +1,19 @@
 <div id="paint-container" class="individual-container hide">
     <h2>탄성코트</h2>
     <select class="dropdown" id="paintOptionSelector">
+
         <option value="" selected>페인트 선택</option>
-        <option value="62" id="pt_1_1">베이직</option>
-        <option value="63" id="pt_1_2">스탠다드</option>
-        <option value="64" id="pt_1_3">프리미엄</option>
+        {% for item in paint_items %}
+            <option
+                value="{{ item.name }}"
+                id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"
+                data-service-option-id="{{ item.id }}">
+
+                {{ item.name }}
+
+            </option>
+        {% endfor %}
+
     </select><br>
     <!--금액 표시-->
     <div class="priceResult" id="paintPrice"></div>

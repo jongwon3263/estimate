@@ -3,30 +3,30 @@
         <div class="individual-container">
             <h5>패키지</h5>
                 {% for item in coating_package_items %}
-                    <label for="ct_{{ item.category_code }}_{{ item.code }}">
-                        <input class="ct_checkbox" type="checkbox" id="ct_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                    <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                        <input class="{{ item.service_id|lower }}_checkbox" type="checkbox" id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}" data-service-option-id="{{ item.id }}">
                         {{ item.name }}
-                        <span class="price-label" id="price_ct_{{ item.category_code }}_{{ item.code }}"></span>
+                        <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                     </label><br>
                 {% endfor %}
         </div>
         <div id="coatingCountertop" class="detail-option">
             <h3>주방 상판코팅</h3>
                 {% for item in coating_countertop_items %}
-                    <label for="ct_{{ item.category_code }}_{{ item.code }}">
-                        <input class="ct_checkbox" type="checkbox" id="ct_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                    <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                        <input class="{{ item.service_id|lower }}_checkbox" type="checkbox" id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}" data-service-option-id="{{ item.id }}">
                         {{ item.name }}
-                        <span class="price-label" id="price_ct_{{ item.category_code }}_{{ item.code }}"></span>
+                        <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                     </label><br>
                 {% endfor %}
         </div>
         <div id="coatingNano" class="detail-option">
             <h3>욕실 나노코팅</h3>
                 {% for item in coating_nano_items %}
-                    <label for="ct_{{ item.category_code }}_{{ item.code }}">
-                        <input class="ct_checkbox" type="checkbox" id="ct_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                    <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                        <input class="{{ item.service_id|lower }}_checkbox" type="checkbox" id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}" data-service-option-id="{{ item.id }}">
                         {{ item.name }}
-                        <span class="price-label" id="price_ct_{{ item.category_code }}_{{ item.code }}"></span>
+                        <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                     </label><br>
                 {% endfor %}
         </div>
@@ -34,20 +34,20 @@
         <div id="coatingFloorTile" class="detail-option">
             <h3>바닥 타일코팅</h3>
                 {% for item in coating_floortile_items %}
-                    <label for="ct_{{ item.category_code }}_{{ item.code }}">
-                        <input class="ct_checkbox" type="checkbox" id="ct_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                    <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                        <input class="{{ item.service_id|lower }}_checkbox" type="checkbox" id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}" data-service-option-id="{{ item.id }}">
                         {{ item.name }}
-                        <span class="price-label" id="price_ct_{{ item.category_code }}_{{ item.code }}"></span>
+                        <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                     </label><br>
                 {% endfor %}
         </div>
         <div id="coatingWallTile" class="detail-option">
             <h3>벽 타일코팅</h3>
                 {% for item in coating_walltile_items %}
-                    <label for="ct_{{ item.category_code }}_{{ item.code }}">
-                        <input class="ct_checkbox" type="checkbox" id="ct_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                    <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                        <input class="{{ item.service_id|lower }}_checkbox" type="checkbox" id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}" data-service-option-id="{{ item.id }}">
                         {{ item.name }}
-                        <span class="price-label" id="price_ct_{{ item.category_code }}_{{ item.code }}"></span>
+                        <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                     </label><br>
                 {% endfor %}
         </div>

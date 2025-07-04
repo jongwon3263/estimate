@@ -1,10 +1,20 @@
 <div id="floorCoating-container" class="individual-container hide">
     <h2>마루코팅</h2>
     <select class="dropdown" id="floorCoatingOptionSelector">
+
         <option value="" selected>마루코팅 범위 선택</option>
-        <option value="60" id="fc_1_1">거실, 주방, 복도</option>
-        <option value="61" id="fc_1_2">거실, 주방, 복도, 방 전체</option>
+        {% for item in floor_coating_items %}
+            <option
+                value="{{ item.name }}"
+                id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"
+                data-service-option-id="{{ item.id }}">
+                {{ item.name }}
+            </option>
+        {% endfor %}
+
     </select><br>
+
+    
     <!--금액 표시-->
     <div class="priceResult" id="floorCoatingPrice"></div>
     <!--작업 일정-->

@@ -3,10 +3,16 @@
         <div class="individual-container">
             <h5>패키지</h5>
                 {% for item in grout_package_items %}
-                    <label for="gr_{{ item.category_code }}_{{ item.code }}">
-                        <input class="gr_checkbox" type="checkbox" id="gr_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                    <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                        <input
+                        class="{{ item.service_id|lower }}_checkbox"
+                        type="checkbox"
+                        id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"
+                        data-service-option-id="{{ item.id }}">
+
                         {{ item.name }}
-                        <span class="price-label" id="price_gr_{{ item.category_code }}_{{ item.code }}"></span>
+                        
+                        <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                     </label><br>
                 {% endfor %}
         </div>
@@ -16,10 +22,10 @@
                     <h3>바닥</h3>
                     {% for item in grout_floor_items %}
                         {% if item.code not in [9, 10] %} {# 옵션코드 9, 10 제외. 즉 포세린 제외 #}
-                        <label for="gr_{{ item.category_code }}_{{ item.code }}">
-                            <input class="gr_checkbox" type="checkbox" id="gr_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                        <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                            <input class="{{ item.service_id|lower }}_checkbox" type="checkbox" id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}" data-service-option-id="{{ item.id }}">
                             {{ item.name }}
-                            <span class="price-label" id="price_gr_{{ item.category_code }}_{{ item.code }}"></span>
+                            <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                         </label><br>
                         {% endif %}
                     {% endfor %}
@@ -30,10 +36,10 @@
                 <div id="groutWall" class="detail-option">
                     <h3>벽면</h3>
                     {% for item in grout_wall_items %}
-                        <label for="gr_{{ item.category_code }}_{{ item.code }}">
-                            <input class="gr_checkbox" type="checkbox" id="gr_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                        <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                            <input class="{{ item.service_id|lower }}_checkbox" type="checkbox" id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}" data-service-option-id="{{ item.id }}">
                             {{ item.name }}
-                            <span class="price-label" id="price_gr_{{ item.category_code }}_{{ item.code }}"></span>
+                            <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                         </label><br>
                     {% endfor %}
 
@@ -45,10 +51,10 @@
         <div id="groutSilicone" class="detail-option">
             <h3>실리콘 오염 방지</h3>
                 {% for item in grout_silicone_items %}
-                    <label for="gr_{{ item.category_code }}_{{ item.code }}">
-                        <input class="gr_checkbox" type="checkbox" id="gr_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                    <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                        <input class="{{ item.service_id|lower }}_checkbox" type="checkbox" id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}" data-service-option-id="{{ item.id }}">
                         {{ item.name }}
-                        <span class="price-label" id="price_gr_{{ item.category_code }}_{{ item.code }}"></span>
+                        <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                     </label><br>
                 {% endfor %}
                 <!--<div class="priceResult" id="groutPriceSilicone"></div>-->

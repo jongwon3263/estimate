@@ -3,10 +3,16 @@
             <div class="individual-container">
                 <h5>패키지</h5>
                 {% for item in kera_package_items %}
-                    <label for="kp_{{ item.category_code }}_{{ item.code }}">
-                        <input class="kp_checkbox" type="checkbox" id="kp_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                    <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                        <input
+                        class="{{ item.service_id|lower }}_checkbox"
+                        type="checkbox"
+                        id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"
+                        data-service-option-id="{{ item.id }}">
+
                         {{ item.name }}
-                        <span class="price-label" id="price_kp_{{ item.category_code }}_{{ item.code }}"></span>
+                        
+                        <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                     </label><br>
                 {% endfor %}
             </div>
@@ -16,10 +22,10 @@
                     <h3>바닥</h3>
                     {% for item in kera_floor_items %}
                         {% if item.code not in [10, 11] %} {# 옵션코드 10, 11 제외. 즉 포세린 제외 #}
-                        <label for="kp_{{ item.category_code }}_{{ item.code }}">
-                            <input class="kp_checkbox" type="checkbox" id="kp_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                        <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                            <input class="{{ item.service_id|lower }}_checkbox" type="checkbox" id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}" data-service-option-id="{{ item.id }}">
                             {{ item.name }}
-                            <span class="price-label" id="price_kp_{{ item.category_code }}_{{ item.code }}"></span>
+                            <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                         </label><br>
                         {% endif %}
                     {% endfor %}
@@ -30,10 +36,10 @@
                 <div id="keraWall" class="detail-option">
                     <h3>벽면</h3>
                     {% for item in kera_wall_items %}
-                        <label for="kp_{{ item.category_code }}_{{ item.code }}">
-                            <input class="kp_checkbox" type="checkbox" id="kp_{{ item.category_code }}_{{ item.code }}" value="{{ item.id }}">
+                        <label for="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}">
+                            <input class="{{ item.service_id|lower }}_checkbox" type="checkbox" id="{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}" data-service-option-id="{{ item.id }}">
                             {{ item.name }}
-                            <span class="price-label" id="price_kp_{{ item.category_code }}_{{ item.code }}"></span>
+                            <span class="price-label" id="price_{{ item.service_id|lower }}_{{ item.category_code }}_{{ item.code }}"></span>
                         </label><br>
                     {% endfor %}
                     <!--<div class="priceResult" id="keraPriceWall"></div>-->

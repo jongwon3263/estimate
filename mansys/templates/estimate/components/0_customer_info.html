@@ -24,14 +24,16 @@
         </div>
 
         <div id="smallType" class="hide">
-            <select style="height:30px; width:120px;" id="smallRoomTypeSelector">
+            <select id="smallRoomTypeSelector" style="height:30px; width:120px;">
                 <option value="" selected>구조 선택</option>
-                <option value="smallRoom1" id="room_2_1">일체형 원룸</option>
-                <option value="smallRoom2" id="room_2_2">분리형 원룸</option>
-                <option value="smallRoom3" id="room_2_3">복층형 원룸</option>
-                <option value="smallRoom4" id="room_2_4">방2, 욕실1</option>
-                <option value="smallRoom5" id="room_2_5">방3, 욕실1</option>
-                <option value="smallRoom6" id="room_2_6">방3, 욕실2</option>
+                {% for item in cleaning_small_items %}
+                    <option
+                        value="{{ item.name }}"
+                        id="room_{{ item.category_code }}_{{ item.code }}"
+                        data-service-option-id="{{ item.id }}">
+                        {{ item.name }}
+                    </option>
+                {% endfor %}
             </select><br>
         </div>
     </div>    
